@@ -1,0 +1,4 @@
+npx lint-staged
+if [ -n "$(git diff --cached --name-only | grep '^server/')" ]; then
+  cd server && pre-commit run
+fi  
