@@ -8,6 +8,43 @@ router = APIRouter(
 )
 
 
+@router.get("/{ad_id}", response_model=List[dict])
+async def get_advertisement_info(ad_id: UUID):
+    connection = await connect_to_db()
+    try:
+        query = """
+            SELECT 
+                ad.ad_id, 
+                ad.title, 
+                ad.description, 
+                ad.creation_date, 
+                ad.created_by, 
+                ad.price,
+                ad.status,
+                ARRAY_AGG(DISTINCT a.name) AS areas
+            FROM 
+                "Advertisement" ad 
+            INNER JOIN 
+                "AdvertisementArea" aa 
+                ON ad.ad_id = aa.ad_id 
+            INNER JOIN 
+                "Area" a 
+                ON aa.area_id = a.area_id 
+            WHERE 
+                ad.ad_id = $1
+            GROUP BY
+                ad.ad_id, ad.title, ad.description, ad.creation_date;
+        """
+        advertisement = await connection.fetch(query, ad_id)
+
+        if not advertisement:
+            raise HTTPException(status_code=404, detail="Advertisement not found.")
+
+        return [dict(ad) for ad in advertisement]
+    finally:
+        await close_db_connection(connection)
+
+
 @router.get("/{ad_id}/applications/", response_model=List[dict])
 async def get_advertisement_applications(ad_id: UUID):
     connection = await connect_to_db()
@@ -69,7 +106,7 @@ async def get_advertisement_applications(ad_id: UUID):
 
         if not users:
             raise HTTPException(
-                status_code=204, detail="No advertisement applications found."
+                status_code=404, detail="No advertisement applications found."
             )
 
         return [dict(user) for user in users]
