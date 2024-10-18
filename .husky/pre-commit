@@ -7,7 +7,7 @@ fi
 
 if [ -n "$(git diff --cached --name-only | grep '^server/')" ]; then
   echo "» Changes detected in 'server'. Running pre-commit..."
-  echo "If linter makes changes, you need to add them to the commit"
   cd server && poetry run pre-commit run
+  echo "If linter makes changes, you need to add them to the commit"
   echo ""
 fi

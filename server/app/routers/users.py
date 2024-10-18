@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi_versioning import version
 from app.core.database import connect_to_db, close_db_connection
 
 router = APIRouter(
@@ -7,6 +8,7 @@ router = APIRouter(
 
 
 @router.get("/")
+@version(1)
 async def get_users():
     connection = await connect_to_db()
     try:

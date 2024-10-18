@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi_versioning import VersionedFastAPI
 from app.routers import users, advertisement
 
 app = FastAPI()
@@ -10,3 +11,8 @@ app.include_router(advertisement.router)
 @app.get("/")
 def read_root():
     return {"message": "API is running!"}
+
+
+app = VersionedFastAPI(
+    app, version="1.0", prefix_format="/v{major}", enable_latest=False
+)

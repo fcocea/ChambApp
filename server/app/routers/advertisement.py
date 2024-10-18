@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi_versioning import version
 from typing import List
 from uuid import UUID
 from app.core.database import connect_to_db, close_db_connection
@@ -9,6 +10,7 @@ router = APIRouter(
 
 
 @router.get("/{ad_id}", response_model=List[dict])
+@version(1)
 async def get_advertisement_info(ad_id: UUID):
     connection = await connect_to_db()
     try:
@@ -46,6 +48,7 @@ async def get_advertisement_info(ad_id: UUID):
 
 
 @router.get("/{ad_id}/applications/", response_model=List[dict])
+@version(1)
 async def get_advertisement_applications(ad_id: UUID):
     connection = await connect_to_db()
     try:
