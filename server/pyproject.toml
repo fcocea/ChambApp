@@ -1,0 +1,19 @@
+[tool.poetry]
+description = "Server for ChambApp"
+name = "server-chambapp"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+fastapi = "^0.115.2"
+uvicorn = "^0.32.0"
+python = "^3.12"
+asyncpg = "^0.29.0"
+python-dotenv = "^1.0.1"
+pydantic = "^2.9.2"
+pre-commit = "^4.0.1"
+ruff = "^0.7.0"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]

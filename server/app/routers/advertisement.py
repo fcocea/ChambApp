@@ -1,18 +1,19 @@
-from fastapi import APIRouter, Query,HTTPException
+from fastapi import APIRouter, HTTPException
 from typing import List
 from uuid import UUID
-from app.database import connect_to_db, close_db_connection
+from app.core.database import connect_to_db, close_db_connection
 
 router = APIRouter(
     prefix="/advertisement",
 )
 
-@router.get("/applications/", response_model=List[dict])
-async def get_advertisement_applications(ad_id: UUID = Query(...)):
+
+@router.get("/{ad_id}/applications/", response_model=List[dict])
+async def get_advertisement_applications(ad_id: UUID):
     connection = await connect_to_db()
     try:
         # check_accepted_query = """
-        #     SELECT 1 
+        #     SELECT 1
         #     FROM "AdvertisementApplication" aa2
         #     WHERE aa2.is_accepted = true AND aa2.ad_id = $1;
         # """
@@ -65,10 +66,12 @@ async def get_advertisement_applications(ad_id: UUID = Query(...)):
                 u.account_creation_date, u.rut, ad.title, ad.description, ad.ad_id; 
         """
         users = await connection.fetch(query, ad_id)
-        
+
         if not users:
-            raise HTTPException(status_code=204, detail="No advertisement applications found.")
-            
+            raise HTTPException(
+                status_code=204, detail="No advertisement applications found."
+            )
+
         return [dict(user) for user in users]
     finally:
         await close_db_connection(connection)

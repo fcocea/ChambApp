@@ -1,7 +1,6 @@
 from typing import List
-from uuid import UUID
 from pydantic import BaseModel
-from datetime import datetime
+
 
 class Applicant(BaseModel):
     rut: str
@@ -11,6 +10,7 @@ class Applicant(BaseModel):
     professions: List[str]
     areas: List[str]
     average_score_as_chamber: float
+
 
 class AdvertisementResponse(BaseModel):
     advertisement_id: str

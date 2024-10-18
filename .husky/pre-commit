@@ -1,4 +1,13 @@
-npx lint-staged
+if [ -n "$(git diff --cached --name-only | grep -v '^server/' | grep -E '\.ts$|\.tsx$|\.js$|\.jsx$')" ]; then
+  echo "» Changes detected in the root. Running lint-staged..."
+  echo "You need to have installed root dependencies (pnpm install)"
+  npx lint-staged
+  echo ""
+fi
+
 if [ -n "$(git diff --cached --name-only | grep '^server/')" ]; then
-  cd server && pre-commit run
-fi  
+  echo "» Changes detected in 'server'. Running pre-commit..."
+  echo "If linter makes changes, you need to add them to the commit"
+  cd server && poetry run pre-commit run
+  echo ""
+fi
