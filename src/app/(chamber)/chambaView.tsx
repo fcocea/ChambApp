@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
 
 type Job = {
@@ -17,10 +17,6 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <Image
-          source={job.image}
-          style={styles.image}
-        />
         <Card.Content>
           <Title>{job.title}</Title>
           <Paragraph>{job.description}</Paragraph>

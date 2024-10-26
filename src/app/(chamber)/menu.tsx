@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Button, Card, Paragraph, Title } from "react-native-paper";
+import { Card, Paragraph, Title } from "react-native-paper";
 
 import Summary from "./chambaView";
 
