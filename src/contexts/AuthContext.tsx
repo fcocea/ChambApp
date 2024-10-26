@@ -1,8 +1,14 @@
 import type { PropsWithChildren } from "react";
 import { createContext, useMemo, useState } from "react";
 
+interface AuthState {
+  user: string;
+  token: string;
+  mode: "user" | "chamber";
+}
+
 interface AuthContextProps {
-  authState: any;
+  authState: AuthState | null;
   setAuthState?: any;
 }
 
@@ -12,7 +18,6 @@ export const AuthContext = createContext<AuthContextProps>({
 
 const AuthProvider = ({ children }: PropsWithChildren) => {
   const [authState, setAuthState] = useState(null);
-  // const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const values = useMemo(() => ({ authState, setAuthState }), [authState]);
   return (

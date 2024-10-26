@@ -9,12 +9,21 @@ export default function Index() {
       <Text className="font-bold">User View </Text>
       <Button
         onPress={() => {
-          setAuthState(true);
+          setAuthState({
+            mode: "chamber"
+          });
         }}
         // className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         title="Modo Chamber"
       >
       </Button>
+
+      <Button
+        onPress={() => {
+          setAuthState(null);
+        }}
+        title="Logout"
+      />
     </View>
   );
 }
