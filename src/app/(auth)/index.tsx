@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { G, Path, SvgProps } from "react-native-svg";
+import { Link } from "expo-router";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -76,7 +77,9 @@ export default function Login() {
       <Text className="text-center mt-auto mb-4">
         No tienes una cuenta?
         {" "}
-        <Text className="text-blue-500">Regístrate</Text>
+        <Link href="/(auth)/sign-up">
+          <Text className="text-blue-500">Regístrate</Text>
+        </Link>
       </Text>
     </View>
   );
