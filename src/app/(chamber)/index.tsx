@@ -17,7 +17,7 @@ export default function Index() {
         title="Modo User"
       />
       <Link href="/menu" asChild>
-        <Text>Go to Menu</Text>
+        <Button title="Menu" />
       </Link>
 
       <Button
