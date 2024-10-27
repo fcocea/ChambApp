@@ -74,7 +74,7 @@ export default function Login() {
         </TouchableOpacity>
 
       </View>
-      <Text className="text-center mt-auto mb-4">
+      <Text className="text-center mt-auto mb-8">
         No tienes una cuenta?
         {" "}
         <Link href="/(auth)/sign-up">
