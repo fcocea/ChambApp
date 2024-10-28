@@ -2,7 +2,7 @@ import { Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import { Stack, useRouter } from "expo-router";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 export default function RootLayout() {
   const { authState } = useAuth();
   const router = useRouter();

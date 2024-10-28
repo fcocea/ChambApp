@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Slot, SplashScreen, useRouter, useSegments } from "expo-router";
 
-import AuthProvider from "@/contexts/AuthContext";
-import { useAuth } from "@/hooks/useAuth";
+import AuthProvider from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 import "@/global.css";
 
