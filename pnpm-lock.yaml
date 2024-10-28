@@ -8,15 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@babel/runtime':
-        specifier: ^7.25.9
-        version: 7.25.9
       '@expo/vector-icons':
         specifier: ^14.0.2
         version: 14.0.4
-      '@react-native/assets-registry':
-        specifier: ^0.76.0
-        version: 0.76.0
       '@react-navigation/native':
         specifier: ^6.1.18
         version: 6.1.18(react-native@0.74.5(@babel/core@7.25.7)(@babel/preset-env@7.25.7(@babel/core@7.25.7))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
@@ -26,9 +20,6 @@ importers:
       expo:
         specifier: ~51.0.38
         version: 51.0.38(@babel/core@7.25.7)(@babel/preset-env@7.25.7(@babel/core@7.25.7))
-      expo-asset:
-        specifier: ~10.0.10
-        version: 10.0.10(expo@51.0.38(@babel/core@7.25.7)(@babel/preset-env@7.25.7(@babel/core@7.25.7)))
       expo-constants:
         specifier: ~16.0.2
         version: 16.0.2(expo@51.0.38(@babel/core@7.25.7)(@babel/preset-env@7.25.7(@babel/core@7.25.7)))
@@ -1160,10 +1151,6 @@ packages:
 
   '@react-native/assets-registry@0.74.87':
     resolution: {integrity: sha512-1XmRhqQchN+pXPKEKYdpJlwESxVomJOxtEnIkbo7GAlaN2sym84fHEGDXAjLilih5GVPpcpSmFzTy8jx3LtaFg==}
-    engines: {node: '>=18'}
-
-  '@react-native/assets-registry@0.76.0':
-    resolution: {integrity: sha512-U8KLV+PC/cRIiDpb1VbeGuEfKq2riZZtNVLp1UOyKWfPbWWu8j6Fr95w7j+nglp41z70iBeF2OmCiVnRvtNklA==}
     engines: {node: '>=18'}
 
   '@react-native/babel-plugin-codegen@0.74.87':
@@ -6857,8 +6844,6 @@ snapshots:
       - utf-8-validate
 
   '@react-native/assets-registry@0.74.87': {}
-
-  '@react-native/assets-registry@0.76.0': {}
 
   '@react-native/babel-plugin-codegen@0.74.87(@babel/preset-env@7.25.7(@babel/core@7.25.7))':
     dependencies:

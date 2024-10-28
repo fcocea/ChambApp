@@ -9,29 +9,28 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "resizeMode": "contain"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/foreground.png",
         "backgroundColor": "#ffffff"
       }
     },
+    "assetBundlePatterns": [
+      "/assets/*"
+    ],
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      ["expo-asset",{
-          "assets": ["./assets/images/"]
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true

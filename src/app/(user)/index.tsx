@@ -1,6 +1,6 @@
 import { Button, Text, View } from "react-native";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Index() {
   const { setAuthState } = useAuth();
