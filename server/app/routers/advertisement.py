@@ -40,13 +40,12 @@ async def get_advertisements(
             """
         conditions = []
         params = []
-
         if area_id:
-            conditions.append("aa.area_id = $1")
             params.append(area_id)
+            conditions.append(f'aa.area_id = ${len(params)}')
         if status:
-            conditions.append("ad.status = $2")
             params.append(status)
+            conditions.append(f'ad.status = ${len(params)}')
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
