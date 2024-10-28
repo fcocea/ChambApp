@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi_versioning import version
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from app.core.database import connect_to_db, close_db_connection
 
@@ -8,6 +8,80 @@ router = APIRouter(
     prefix="/advertisement",
 )
 
+@router.get("/", response_model=List[dict])
+@version(1)
+async def get_advertisements(
+        area_id: Optional[int] = Query(default=None, description="ID del área"), 
+        status: Optional[int] = Query(default=None, description="Estado del advertisement"),
+    ):
+    connection = await connect_to_db()
+    try:
+        query = """
+            SELECT 
+                ad.ad_id, 
+                ad.title, 
+                ad.description, 
+                ad.creation_date, 
+                ad.status,
+                ad.price,
+                ad.start_date,
+                ad.address,
+                u.rut,
+                u.first_name,
+                u.last_name
+            FROM 
+                "Advertisement" ad
+            INNER JOIN 
+                "AdvertisementArea" aa ON ad.ad_id = aa.ad_id
+            INNER JOIN 
+                "Area" a ON aa.area_id = a.area_id
+            INNER JOIN 
+                "User" u ON ad.created_by = u.rut 
+            """
+        conditions = []
+        params = []
+
+        if area_id:
+            conditions.append("aa.area_id = $1")
+            params.append(area_id)
+        if status:
+            conditions.append("ad.status = $2")
+            params.append(status)
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += """
+            GROUP BY ad.ad_id, ad.title, ad.description, ad.creation_date, 
+            ad.status, ad.price, ad.start_date, ad.address, 
+            u.rut, u.first_name, u.last_name;
+            """
+        rows = await connection.fetch(query, *params)
+        if not rows:
+            raise HTTPException(status_code=404, detail="No advertisements found.")
+        
+        advertisements = [
+            {
+                "ad_id": row["ad_id"],
+                "title": row["title"],
+                "description": row["description"],
+                "creation_date": row["creation_date"],
+                "status": row["status"],
+                "price": row["price"],
+                "start_date": row["start_date"],
+                "address": row["address"],
+                "created_by": {
+                    "rut": row["rut"],
+                    "first_name": row["first_name"],
+                    "last_name": row["last_name"],
+                },
+            }
+            for row in rows
+        ]
+
+        return advertisements
+        
+    finally:
+        await close_db_connection(connection)
 
 @router.get("/{ad_id}", response_model=List[dict])
 @version(1)
