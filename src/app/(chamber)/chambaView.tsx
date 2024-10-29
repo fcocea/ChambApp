@@ -1,7 +1,7 @@
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import { Button, Card } from "react-native-paper";
-import { Inter } from "@expo-google-fonts/inter";
+import { Inter_400Regular, Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
 
 type Job = {
   ad_id: string;
@@ -26,6 +26,14 @@ type SummaryProps = {
 };
 
 export default function Summary({ job, setSelectedJob }: SummaryProps) {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_700Bold
+  });
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#007AFF" />;
+  }
   return (
     <View style={styles.container}>
       {/* Title job.title */}
@@ -73,7 +81,7 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
 
 const styles = StyleSheet.create({
   container: {
-    fontFamily: Inter,
+    fontFamily: "Inter_400Regular",
     width: "100%",
     height: "100%",
     flex: 1,
