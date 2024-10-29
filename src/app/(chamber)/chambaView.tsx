@@ -3,11 +3,19 @@ import { StyleSheet, View } from "react-native";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
 
 type Job = {
+  ad_id: string;
   title: string;
   description: string;
-  owner: string;
+  creation_date: string;
+  status: number;
+  price: number;
+  start_date: string;
   address: string;
-  price: string;
+  created_by: {
+    rut: string;
+    first_name: string;
+    last_name: string;
+  };
   image?: any;
 };
 
@@ -24,7 +32,11 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
         <Card.Content>
           <Title>{job.title}</Title>
           <View style={styles.flexContainer}>
-            <Paragraph style={styles.flexItem}>{job.owner}</Paragraph>
+            <Paragraph style={styles.flexItem}>
+              {job.created_by.first_name}
+              {" "}
+              {job.created_by.last_name}
+            </Paragraph>
             <Paragraph style={styles.flexItem}>{job.address}</Paragraph>
             <Paragraph style={styles.flexItem}>{job.price}</Paragraph>
           </View>
@@ -59,12 +71,10 @@ const styles = StyleSheet.create({
   flexContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    backgroundColor: "#007AFF",
     marginVertical: 10
   },
   flexItem: {
     flexBasis: "33%", // Adjust this value to control the number of items per row
-    marginBottom: 10,
-    color: "#fff"
+    marginBottom: 10
   }
 });
