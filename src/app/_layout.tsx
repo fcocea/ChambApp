@@ -24,9 +24,12 @@ const DynamicStack = () => {
       return;
     }
     console.log(segments);
+    if (segments[0] === "_sitemap") {
+      return;
+    }
     if (!authState && segments[0] !== "(auth)") {
       router.replace("/(auth)");
-    } else if (authState?.mode === "user" && segments[0] !== "(user)") {
+    } else if (authState?.mode === "user" && segments[0] !== "(user)" && segments[0] !== "") {
       router.replace("/(user)");
     } else if (authState?.mode === "chamber" && segments[0] !== "(chamber)") {
       router.replace("/(chamber)");
