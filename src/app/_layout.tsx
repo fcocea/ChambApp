@@ -23,7 +23,6 @@ const DynamicStack = () => {
     if (loading) {
       return;
     }
-    console.log(segments);
     if (segments[0] === "_sitemap") {
       return;
     }
@@ -36,7 +35,7 @@ const DynamicStack = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState, segments]);
-  return <Slot />;
+  return <Slot screenOptions={{ animation: "slide_from_right" }} />;
 };
 
 export default function RootLayout() {
