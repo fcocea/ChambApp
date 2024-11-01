@@ -30,20 +30,54 @@ export default function Menu() {
 
   useEffect(() => {
     fetchJobs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  const defaultJobs: Job[] = [
+    {
+      ad_id: "1",
+      title: "Limpieza de departamento completo",
+      description: "Descripción del trabajo de ejemplo 1",
+      creation_date: "2024-10-01",
+      status: 2,
+      price: 100,
+      start_date: "2024-11-01",
+      address: "Dirección de ejemplo 1",
+      created_by: {
+        rut: "12345678-9",
+        first_name: "Ejemplo",
+        last_name: "Usuario"
+      },
+      image: "https://picsum.photos/700"
+    },
+    {
+      ad_id: "2",
+      title: "Trabajo de ejemplo 2",
+      description: "Descripción del trabajo de ejemplo 2",
+      creation_date: "2024-10-01",
+      status: 2,
+      price: 150,
+      start_date: "2024-11-02",
+      address: "Dirección de ejemplo 2",
+      created_by: {
+        rut: "98765432-1",
+        first_name: "Usuario",
+        last_name: "Ejemplo"
+      },
+      image: "https://picsum.photos/700"
+    }
+  ];
   const fetchJobs = async () => {
     try {
       const response = await fetch(`${apiUrl}/advertisement/?area_id=2&status=2`);
       const data = await response.json();
-      setAvailableJobs(data);
+      setAvailableJobs(data.length ? data : defaultJobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
+      setAvailableJobs(defaultJobs);
     } finally {
       setLoading(false);
     }
   };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
