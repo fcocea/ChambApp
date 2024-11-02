@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { Inter_400Regular, Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
 
@@ -25,6 +25,24 @@ type SummaryProps = {
   setSelectedJob: (job: Job | null) => void;
 };
 
+function formatDate(dateString: string | number | Date) {
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  };
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  };
+
+  const date = new Date(dateString).toLocaleDateString("en-GB", dateOptions);
+  const time = new Date(dateString).toLocaleTimeString("en-GB", timeOptions);
+
+  return { date, time };
+}
+
 export default function Summary({ job, setSelectedJob }: SummaryProps) {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -36,29 +54,55 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
   }
   return (
     <View style={styles.container}>
-      {/* Title job.title */}
-      <Text style={styles.cardTitle}>{job.title}</Text>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => setSelectedJob(null)}>
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        {/* Title job.title */}
+        <Text style={styles.cardTitle}>{job.title}</Text>
+      </View>
       {/* Job Image job.image */}
       <Card.Cover source={{ uri: job.image || "https://picsum.photos/700" }} style={styles.image} />
       <Card.Content style={styles.jobDetailsContainer}>
         <View style={styles.verticalContainer}>
           {/* Para: job.created_by.first_name job.created_by.last_name  */}
-          <Text style={styles.fieldTextBold}>
-            Para:
-            {" "}
-            <Text style={styles.fieldText}>
-              {job.created_by.first_name}
+          <View style={styles.horizontalContainer}>
+            <Text style={styles.fieldTextBold}>
+              Para:
               {" "}
-              {job.created_by.last_name}
+              <Text style={styles.fieldText}>
+                {job.created_by.first_name}
+                {" "}
+                {job.created_by.last_name}
+              </Text>
             </Text>
-          </Text>
-          <Text style={styles.fieldTextBold}>
-            {/* Pago: job.price */}
-            Pago: $
-            <Text style={styles.fieldText}>
-              {job.price}
+            <Text style={styles.fieldTextBold}>
+              {/* Pago: job.price */}
+              Pago: $
+              <Text style={styles.fieldText}>
+                {job.price}
+              </Text>
             </Text>
-          </Text>
+          </View>
+          <View style={styles.horizontalContainer}>
+            <Text style={styles.fieldTextBold}>
+              {/* Pago: job.price */}
+              Fecha:
+              {" "}
+              <Text style={styles.fieldText}>
+                {formatDate(job.start_date).date}
+              </Text>
+            </Text>
+            <Text style={styles.fieldTextBold}>
+              {/* Pago: job.price */}
+              Hora:
+              {" "}
+              <Text style={styles.fieldText}>
+                {formatDate(job.start_date).time}
+              </Text>
+            </Text>
+
+          </View>
         </View>
         {/* Description job.description */}
         <View style={styles.jobDescriptionContainer}>
@@ -68,7 +112,7 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
       </Card.Content>
       <View style={styles.jobDescriptionContainer}>
         <Text style={styles.sectionTitle}>Ubicacion de la chamba</Text>
-        <Image source={{ uri: "https://picsum.photos/700" }} style={styles.map} />
+        <Image source={{ uri: "https://storage.googleapis.com/support-forums-api/attachment/thread-28908032-12708632011346779300.jpg" }} style={styles.map} />
       </View>
       <Card.Actions style={styles.buttonContainer}>
         <Button mode="contained" onPress={() => setSelectedJob(null)} style={styles.button}>
@@ -88,7 +132,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
-    gap: 20
+    marginTop: 20
+  },
+  backButton: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    borderRadius: 5
+  },
+  backButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold"
   },
   card: {
     width: "90%",
@@ -101,17 +154,17 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: "cover"
   },
-  chip: {
-    position: "absolute",
-    top: 15,
-    right: 15,
-    backgroundColor: "green",
-    color: "white"
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    gap: 30
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 10
+  horizontalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 10
   },
   verticalContainer: {
     flexDirection: "column",
@@ -161,7 +214,7 @@ const styles = StyleSheet.create({
     width: "100%"
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 30,
     color: "#0D141C",
     fontWeight: 700,
     textAlign: "center"
