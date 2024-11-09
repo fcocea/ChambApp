@@ -1,7 +1,7 @@
 import { Button, Text, View } from "react-native";
 import { Link } from "expo-router";
 
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
   const { setAuthState } = useAuth();
