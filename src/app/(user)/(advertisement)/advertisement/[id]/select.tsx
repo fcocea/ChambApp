@@ -10,8 +10,19 @@ import { ChamberCard, ChamberCardSkeleton } from "@/components/views/user";
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 interface AvertisementData {
-  info: any;
-  applications: any;
+  info: {
+    title: string;
+    description: string;
+    creation_date: string;
+    areas: string[];
+    price: number;
+  }[];
+  applications: {
+    first_name: string;
+    last_name: string;
+    average_score_as_chamber: number;
+    account_creation_date: string;
+  }[];
 }
 
 export default function AdvertisementSelect() {
@@ -62,7 +73,7 @@ export default function AdvertisementSelect() {
                 <Text className="text-white text-xl font-medium line-clamp-1">{data?.info?.[0]?.title}</Text>
                 {/* <Text className="text-white text-xs">Edmundo Larenas 219, Concepción</Text> */}
                 <Text className="text-white text-xs">{data?.info?.[0]?.description}</Text>
-                <Text className="text-white text-xs">{new Date(data?.info?.[0]?.creation_date).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" })}</Text>
+                <Text className="text-white text-xs">{new Date(data?.info?.[0]?.creation_date || "").toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" })}</Text>
               </View>
               <View className="flex flex-row justify-between items-center">
                 <View className="flex flex-row gap-5">
@@ -75,7 +86,7 @@ export default function AdvertisementSelect() {
                   }
                 </View>
                 <Text className="text-white font-medium text-lg flex justify-center items-center">
-                  {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(data?.info?.[0]?.price)}
+                  {new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(data?.info?.[0]?.price || 0)}
                 </Text>
               </View>
             </Pressable>
@@ -86,8 +97,8 @@ export default function AdvertisementSelect() {
           ? Array.from({ length: 6 }).map((_, index) => (
             <ChamberCardSkeleton key={index} />
           ))
-          : Array.from({ length: 6 }).map((_, index) => (
-            <ChamberCard key={index} />
+          : data?.applications.map((data, index) => (
+            <ChamberCard key={index} data={data} />
           ))}
       </ScrollView>
     </View>
