@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-export default function Separator({ text }: { text?: string }) {
+export function Separator({ text }: { text?: string }) {
   return (
     <View className="w-full flex flex-row items-center gap-3">
       <View className="h-[2px] bg-[#F5F5F7] flex-1" />

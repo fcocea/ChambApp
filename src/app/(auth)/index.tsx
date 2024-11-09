@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 
 import AppleIcon from "@/components/icons/AppleIcon";
 import GoogleIcon from "@/components/icons/GoogleIcon";
-import Separator from "@/components/Separator";
+import { Separator } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {

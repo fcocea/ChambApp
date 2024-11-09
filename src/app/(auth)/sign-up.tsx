@@ -3,7 +3,7 @@ import { Image } from "expo-image";
 
 import AppleIcon from "@/components/icons/AppleIcon";
 import GoogleIcon from "@/components/icons/GoogleIcon";
-import Separator from "@/components/Separator";
+import { Separator } from "@/components/ui";
 
 export default function SignUp() {
   return (
