@@ -1,10 +1,15 @@
 import React from "react";
 import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import { Button } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
+
+import StarRating from "./starRating";
 
 const chamber = {
   name: "John Doe",
-  photo: "https://example.com/profile-picture.jpg"
+  photo: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+  rating: 4.5
 };
 
 export default function Profile() {
@@ -26,6 +31,36 @@ export default function Profile() {
       </View>
       <Text style={styles.name}>{chamber.name}</Text>
       <View style={styles.divider} />
+      <View style={styles.areas}>
+        <Text style={styles.chip}> Carpinteria</Text>
+        <Text style={styles.chip}> Electricidad</Text>
+      </View>
+      <View style={styles.rating}>
+        <StarRating rating={chamber.rating} />
+      </View>
+      <View style={styles.profileOptions}>
+        <View style={styles.option}>
+          <Text> Editar perfil</Text>
+          <Icon name="cog" size={24} color="black" />
+        </View>
+        <View style={styles.option}>
+          <Text> Historial</Text>
+          <Icon name="history" size={24} color="black" />
+        </View>
+        <View style={styles.option}>
+          <Text> Ayuda</Text>
+          <Icon name="help-circle" size={24} color="black" />
+        </View>
+      </View>
+      <Button
+        mode="contained"
+        onPress={() => {
+          console.log("Logout");
+        }}
+        style={{ margin: 10 }}
+      >
+        Cerrar sesión
+      </Button>
     </View>
   );
 }
@@ -50,7 +85,9 @@ const styles = StyleSheet.create({
   profileImage: {
     width: "100%",
     height: "100%",
-    backgroundColor: "gray"
+    backgroundColor: "gray",
+    borderColor: "black",
+    borderWidth: 1
   },
   name: {
     fontSize: 26,
@@ -67,5 +104,46 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 18,
     color: "gray"
+  },
+  areas: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  chip: {
+    backgroundColor: "#db98e4",
+    paddingHorizontal: 15,
+    borderRadius: 25,
+    marginHorizontal: 5,
+    color: "white"
+  },
+  rating: {
+    padding: 10,
+    borderRadius: 5
+  },
+  ratingText: {
+    color: "white",
+    fontSize: 16
+  },
+  profileOptions: {
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    marginTop: 20,
+    width: "100%"
+  },
+  closeButton: {
+
+  },
+  option: {
+    flexDirection: "row",
+    padding: 10,
+    width: "100%",
+    backgroundColor: "#f5f5f5",
+    marginBottom: 5,
+    borderRadius: 5,
+    justifyContent: "space-between"
   }
+
 });
