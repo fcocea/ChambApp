@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
+import { Avatar } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function timeSince(startDate: Date): string {
@@ -32,15 +32,7 @@ export function ChamberCard({ data }: { data?: any }) {
       }}
     >
       <View className="w-full flex flex-row gap-3">
-        <Image
-          source="https://tresubresdobles.com/wp-content/uploads/2024/04/Captura-de-pantalla-2024-04-25-a-las-21.41.02.jpg"
-          contentFit="cover"
-          style={{
-            width: 96,
-            height: 96,
-            borderRadius: 50
-          }}
-        />
+        <Avatar size={96} name={`${data?.first_name} ${data?.last_name}`} />
         <View className="flex py-3 gap-3">
           <Text className="font-bold">
             {data?.first_name}

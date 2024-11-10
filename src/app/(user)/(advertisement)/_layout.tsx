@@ -22,7 +22,7 @@ export default function RootLayout() {
         },
         headerShadowVisible: false,
         headerLeft: () => (
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => router.back()} className="mr-2">
             <Feather name="chevron-left" size={24} color="black" />
           </Pressable>
         )

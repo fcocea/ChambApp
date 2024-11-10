@@ -27,7 +27,7 @@ export default function Login() {
             </View>
             <View className="flex gap-4">
               <TextInput placeholder="Ingresa tu correo" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" />
-              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" />
+              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" secureTextEntry />
             </View>
             <View className="flex gap-6">
               <TouchableOpacity

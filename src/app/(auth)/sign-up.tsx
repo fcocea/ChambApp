@@ -28,7 +28,7 @@ export default function SignUp() {
             <Text className="font-bold text-4xl text-[#333333]">Crea una cuenta</Text>
             <View className="flex gap-6">
               <TextInput placeholder="Ingresa tu correo" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" />
-              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" />
+              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" secureTextEntry />
             </View>
             <View className="flex gap-6">
               <TouchableOpacity className="w-full py-4 px-3 bg-primary rounded-xl">
