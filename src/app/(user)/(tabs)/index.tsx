@@ -1,6 +1,7 @@
 import { Button, Text, View } from "react-native";
+import { Link } from "expo-router";
 
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
   const { setAuthState } = useAuth();
@@ -24,6 +25,9 @@ export default function Index() {
         }}
         title="Logout"
       />
+      <Link href="/(advertisement)/advertisement/b0792a71-2029-40cf-86a5-51a652150257/select">
+        <Text>Seleccionar chamber</Text>
+      </Link>
     </View>
   );
 }
