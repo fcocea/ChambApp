@@ -1,6 +1,10 @@
 from fastapi import APIRouter
 from fastapi_versioning import version
 from app.core.database import connect_to_db, close_db_connection
+from typing import Annotated
+import jwt
+from fastapi import Header, HTTPException
+from app.core.config import SECRET_KEY, ALGORITHM
 
 router = APIRouter(
     prefix="/users",
@@ -16,3 +20,33 @@ async def get_users():
         return [dict(user) for user in users]
     finally:
         await close_db_connection(connection)
+
+
+@router.get("/me")
+@version(1)
+async def get_me_info(
+    access_token: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not access_token:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    try:
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        rut = payload["rut"]
+
+        connection = await connect_to_db()
+        try:
+            query = """
+                SELECT rut, phone, first_name, last_name, birth_date, gender, email, account_creation_date, can_be_chamber
+                FROM "User"
+                WHERE rut=$1
+            """
+            user = await connection.fetch(query, rut)
+
+        finally:
+            await close_db_connection(connection)
+
+        return user[0]
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
