@@ -20,14 +20,17 @@ function timeSince(startDate: Date): string {
   return `${months} ${months === 1 ? "mes" : "meses"}`;
 }
 
-export function ChamberCard({ data }: { data?: any }) {
+export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelectedChamber?: any }) {
   const router = useRouter();
   // const { setSelectedChamber } = useAdversitementUser();
   return (
     <Pressable
       className="flex flex-col w-full gap-1"
       onPress={() => {
-        // setSelectedChamber(data?.rut);
+        setSelectedChamber((prev: any) => ({
+          ...prev,
+          selected: data
+        }));
         router.push("./review");
       }}
     >
@@ -43,9 +46,14 @@ export function ChamberCard({ data }: { data?: any }) {
             <View className="flex text-sm items-center flex-row gap-1">
               <Feather name="star" color="black" />
               <Text>
-                {data?.average_score_as_chamber}
+                {Number(data?.average_score).toFixed(2)}
                 {" "}
-                (123 opiniones)
+                (
+                {data?.num_evaluations}
+                {" "}
+                opini
+                {data?.num_evaluations === 1 ? "ón" : "ones"}
+                )
               </Text>
             </View>
             <Text className="text-primary">180 tareas de este tipo</Text>
