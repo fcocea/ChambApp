@@ -1,7 +1,9 @@
 import React from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { Inter_400Regular, Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
+
+import { useAuth } from "@/hooks/useAuth";
 
 type Job = {
   ad_id: string;
@@ -49,9 +51,36 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
     Inter_700Bold
   });
 
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { authState } = useAuth();
+
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#007AFF" />;
   }
+
+  const applyToJob = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/advertisement/${job.ad_id}/apply/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${authState?.token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert("Postulación exitosa", data.message);
+      } else {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.detail || "No se pudo completar la postulación.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Hubo un problema al enviar la postulación.");
+      console.error("Error applying to job:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -116,10 +145,8 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
       </View>
       <Card.Actions>
         <View style={styles.buttonsContainer}>
-          <Button mode="contained" onPress={() => setSelectedJob(null)} style={styles.button}>
-            <Text style={styles.buttonText}>
-              ¡Postula a la chamba!
-            </Text>
+          <Button mode="contained" onPress={applyToJob} style={styles.button}>
+            <Text style={styles.buttonText}>¡Postula a la chamba!</Text>
           </Button>
           <Button mode="contained" onPress={() => setSelectedJob(null)} style={styles.button}>
             <Text style={styles.buttonText}>¡Chatea con el cliente!</Text>
