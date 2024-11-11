@@ -84,7 +84,7 @@ async def get_advertisements(
         await close_db_connection(connection)
 
 
-@router.get("/{ad_id}", response_model=List[dict])
+@router.get("/{ad_id}", response_model=dict)
 @version(1)
 async def get_advertisement_info(ad_id: UUID):
     connection = await connect_to_db()
@@ -95,7 +95,8 @@ async def get_advertisement_info(ad_id: UUID):
                 ad.title, 
                 ad.description, 
                 ad.creation_date, 
-                ad.created_by, 
+                ad.created_by,
+                ad.start_date, 
                 ad.price,
                 ad.status,
                 ARRAY_AGG(DISTINCT a.name) AS areas
@@ -116,8 +117,7 @@ async def get_advertisement_info(ad_id: UUID):
 
         if not advertisement:
             raise HTTPException(status_code=404, detail="Advertisement not found.")
-
-        return [dict(ad) for ad in advertisement]
+        return dict(advertisement[0])
     finally:
         await close_db_connection(connection)
 
