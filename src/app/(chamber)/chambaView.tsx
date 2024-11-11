@@ -60,7 +60,7 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
 
   const applyToJob = async () => {
     try {
-      const response = await fetch(`${apiUrl}/advertisement/${job.ad_id}/apply/`, {
+      const response = await fetch(`${apiUrl}/advertisements/${job.ad_id}/apply/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

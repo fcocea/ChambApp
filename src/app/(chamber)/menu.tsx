@@ -35,7 +35,7 @@ export default function Menu() {
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch(`${apiUrl}/advertisement/?area_id=2&status=0`);
+      const response = await fetch(`${apiUrl}/advertisements/?area_id=2&status=0`);
       const data = await response.json();
       setAvailableJobs(data);
     } catch (error) {

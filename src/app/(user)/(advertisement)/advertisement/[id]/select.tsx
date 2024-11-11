@@ -39,8 +39,8 @@ export default function AdvertisementSelect() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const advertisementInfo = fetch(`${API_URL}/advertisement/${id}`);
-        const advertisementApplications = fetch(`${API_URL}/advertisement/${id}/applications`);
+        const advertisementInfo = fetch(`${API_URL}/advertisements/${id}`);
+        const advertisementApplications = fetch(`${API_URL}/advertisements/${id}/applications`);
         const [info, applications] = await Promise.all([advertisementInfo, advertisementApplications]);
         const [infoData, applicationsData] = await Promise.all([info.json(), applications.json()]);
         setData({
