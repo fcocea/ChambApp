@@ -8,12 +8,13 @@ router = APIRouter(
     prefix="/advertisement",
 )
 
+
 @router.get("/", response_model=List[dict])
 @version(1)
 async def get_advertisements(
-        area_id: Optional[int] = Query(default=None, description="ID del área"), 
-        status: Optional[int] = Query(default=None, description="Estado del advertisement"),
-    ):
+    area_id: Optional[int] = Query(default=None, description="ID del área"),
+    status: Optional[int] = Query(default=None, description="Estado del advertisement"),
+):
     connection = await connect_to_db()
     try:
         query = """
@@ -42,10 +43,10 @@ async def get_advertisements(
         params = []
         if area_id:
             params.append(area_id)
-            conditions.append(f'aa.area_id = ${len(params)}')
+            conditions.append(f"aa.area_id = ${len(params)}")
         if status:
             params.append(status)
-            conditions.append(f'ad.status = ${len(params)}')
+            conditions.append(f"ad.status = ${len(params)}")
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
@@ -57,7 +58,7 @@ async def get_advertisements(
         rows = await connection.fetch(query, *params)
         if not rows:
             raise HTTPException(status_code=404, detail="No advertisements found.")
-        
+
         advertisements = [
             {
                 "ad_id": row["ad_id"],
@@ -78,11 +79,12 @@ async def get_advertisements(
         ]
 
         return advertisements
-        
+
     finally:
         await close_db_connection(connection)
 
-@router.get("/{ad_id}", response_model=List[dict])
+
+@router.get("/{ad_id}", response_model=dict)
 @version(1)
 async def get_advertisement_info(ad_id: UUID):
     connection = await connect_to_db()
@@ -93,7 +95,8 @@ async def get_advertisement_info(ad_id: UUID):
                 ad.title, 
                 ad.description, 
                 ad.creation_date, 
-                ad.created_by, 
+                ad.created_by,
+                ad.start_date, 
                 ad.price,
                 ad.status,
                 ARRAY_AGG(DISTINCT a.name) AS areas
@@ -114,8 +117,7 @@ async def get_advertisement_info(ad_id: UUID):
 
         if not advertisement:
             raise HTTPException(status_code=404, detail="Advertisement not found.")
-
-        return [dict(ad) for ad in advertisement]
+        return dict(advertisement[0])
     finally:
         await close_db_connection(connection)
 
@@ -125,14 +127,14 @@ async def get_advertisement_info(ad_id: UUID):
 async def get_advertisement_applications(ad_id: UUID):
     connection = await connect_to_db()
     try:
-        # check_accepted_query = """
-        #     SELECT 1
-        #     FROM "AdvertisementApplication" aa2
-        #     WHERE aa2.is_accepted = true AND aa2.ad_id = $1;
-        # """
-        # accepted_users = await connection.fetch(check_accepted_query, ad_id)
-        # if accepted_users:
-        #     raise HTTPException(status_code=204)
+        check_accepted_query = """
+            SELECT 1
+            FROM "AdvertisementApplication" aa2
+            WHERE aa2.is_accepted = true AND aa2.ad_id = $1;
+        """
+        accepted_users = await connection.fetch(check_accepted_query, ad_id)
+        if accepted_users:
+            raise HTTPException(status_code=204)
 
         query = """
             SELECT 

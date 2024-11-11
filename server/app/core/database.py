@@ -1,5 +1,5 @@
 import asyncpg
-from .config import DATABASE_URL
+from app.core.config import DATABASE_URL
 
 
 async def connect_to_db():
