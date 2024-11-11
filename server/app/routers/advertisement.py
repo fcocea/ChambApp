@@ -129,8 +129,8 @@ async def get_advertisement_applications(ad_id: UUID):
     try:
         check_accepted_query = """
             SELECT 1
-            FROM "AdvertisementApplication" aa2
-            WHERE aa2.is_accepted = true AND aa2.ad_id = $1;
+            FROM "AdvertisementApplication" aa
+            WHERE aa.is_accepted = true AND aa.ad_id = $1;
         """
         accepted_users = await connection.fetch(check_accepted_query, ad_id)
         if accepted_users:
@@ -138,28 +138,15 @@ async def get_advertisement_applications(ad_id: UUID):
 
         query = """
             SELECT 
-                u.rut,
                 u.first_name,
                 u.last_name,
                 u.account_creation_date, 
                 ARRAY_AGG(DISTINCT p.name) AS professions,
                 ARRAY_AGG(DISTINCT a.name) AS areas,
-                COALESCE(ROUND((
-                    SELECT AVG(h.score_to_ch) 
-                    FROM "History" h 
-                    WHERE h.rut_ch = u.rut
-                ), 2), 0) AS average_score_as_chamber
+                COALESCE(h_stats.average_score, 0) AS average_score,
+                COALESCE(h_stats.num_evaluations, 0) AS num_evaluations
             FROM 
-                "Advertisement" ad 
-            INNER JOIN 
-                "AdvertisementApplication" aa 
-                ON ad.ad_id = aa.ad_id  
-            INNER JOIN 
-                "AdvertisementArea" aa_area  
-                ON ad.ad_id = aa_area.ad_id  
-            INNER JOIN 
-                "Area" area 
-                ON aa_area.area_id = area.area_id 
+                "AdvertisementApplication" aa
             INNER JOIN 
                 "User" u 
                 ON aa.rut = u.rut
@@ -175,18 +162,26 @@ async def get_advertisement_applications(ad_id: UUID):
             INNER JOIN 
                 "Area" a 
                 ON cs.area_id = a.area_id
+            LEFT JOIN LATERAL (
+                SELECT 
+                    AVG(score_to_ch) AS average_score,
+                    COUNT(score_to_ch) AS num_evaluations
+                FROM 
+                    "History"
+                WHERE 
+                    rut_ch = u.rut
+            ) h_stats ON true
             WHERE 
-                ad.ad_id = $1
+                aa.ad_id = $1
             GROUP BY 
-                u.account_creation_date, u.rut, ad.title, ad.description, ad.ad_id; 
+                u.first_name, u.last_name, u.account_creation_date, u.rut, h_stats.average_score, h_stats.num_evaluations;
         """
-        users = await connection.fetch(query, ad_id)
 
+        users = await connection.fetch(query, ad_id)
         if not users:
             raise HTTPException(
                 status_code=404, detail="No advertisement applications found."
             )
-
         return [dict(user) for user in users]
     finally:
         await close_db_connection(connection)
