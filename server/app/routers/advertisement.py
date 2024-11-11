@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query, Header, Response
 from fastapi_versioning import version
-from typing import List, Optional
+from typing import List, Optional, Annotated
 from uuid import UUID
 from app.core.database import connect_to_db, close_db_connection
+import jwt
+from app.core.config import SECRET_KEY, ALGORITHM
+import asyncpg
+from pydantic import BaseModel
+from datetime import datetime
 
 router = APIRouter(
     prefix="/advertisement",
@@ -186,5 +191,120 @@ async def get_advertisement_applications(ad_id: UUID, response: Response):
                 status_code=404, detail="No advertisement applications found."
             )
         return [dict(user) for user in users]
+    finally:
+        await close_db_connection(connection)
+
+
+@router.post("/{ad_id}/apply/", response_model=dict)
+@version(1)
+async def advertisement_apply(
+    ad_id: UUID,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+    rut = payload["rut"]
+    connection = await connect_to_db()
+    try:
+        check_query = """
+            SELECT created_by FROM "Advertisement" WHERE ad_id = $1
+        """
+        ad_owner = await connection.fetchval(check_query, ad_id)
+
+        if ad_owner == rut:
+            raise HTTPException(
+                status_code=400, detail="User cannot apply to their own advertisement"
+            )
+
+        query = """
+            INSERT INTO "AdvertisementApplication" (rut, ad_id)
+            VALUES ($1, $2)
+            RETURNING ad_id
+        """
+        application_id = await connection.fetchval(query, rut, ad_id)
+        return {"message": "Application successful", "application_id": application_id}
+    except asyncpg.UniqueViolationError:
+        raise HTTPException(
+            status_code=400, detail="User has already applied to this advertisement"
+        )
+    finally:
+        await close_db_connection(connection)
+
+
+class AdvertisementCreate(BaseModel):
+    title: str
+    description: str
+    price: int
+    start_date: datetime
+    address: str
+    areas: List[int]
+
+
+@router.post("/create", response_model=dict)
+@version(1)
+async def advertisement_create(
+    advertisement: AdvertisementCreate,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+    rut = payload["rut"]
+    connection = await connect_to_db()
+    try:
+        query_check_active_advertisement = """
+            SELECT 1 
+            FROM "Advertisement" 
+            WHERE created_by = $1 
+            AND status IN (0, 1)
+            LIMIT 1;
+        """
+        existing_ad = await connection.fetchval(query_check_active_advertisement, rut)
+
+        if existing_ad:
+            raise HTTPException(
+                status_code=400, detail="User already has an active advertisement"
+            )
+
+        query = """
+            WITH new_advertisement AS (
+                INSERT INTO "Advertisement" (ad_id, title, description, price, start_date, created_by, address)
+                VALUES (
+                    uuid_generate_v4(),
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    $6
+                )
+                RETURNING ad_id
+            )
+            INSERT INTO "AdvertisementArea" (ad_id, area_id)
+            SELECT new_advertisement.ad_id, area_id
+            FROM new_advertisement, unnest($7::int[]) AS area_id;
+        """
+        async with connection.transaction():
+            result = await connection.fetchval(
+                query,
+                advertisement.title,
+                advertisement.description,
+                advertisement.price,
+                advertisement.start_date,
+                rut,
+                advertisement.address,
+                advertisement.areas,
+            )
+        return {
+            "ad_id": result,
+            "title": advertisement.title,
+            "description": advertisement.description,
+            "price": advertisement.price,
+            "start_date": advertisement.start_date.isoformat(),
+            "address": advertisement.address,
+            "areas": advertisement.areas,
+            "status": "Created",
+        }
     finally:
         await close_db_connection(connection)

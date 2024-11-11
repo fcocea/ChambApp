@@ -1,7 +1,9 @@
 import React from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { Inter_400Regular, Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
+
+import { useAuth } from "@/hooks/useAuth";
 
 type Job = {
   ad_id: string;
@@ -49,9 +51,36 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
     Inter_700Bold
   });
 
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { authState } = useAuth();
+
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#007AFF" />;
   }
+
+  const applyToJob = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/advertisement/${job.ad_id}/apply/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${authState?.token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert("Postulación exitosa", data.message);
+      } else {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.detail || "No se pudo completar la postulación.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Hubo un problema al enviar la postulación.");
+      console.error("Error applying to job:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -114,10 +143,15 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
         <Text style={styles.sectionTitle}>Ubicacion de la chamba</Text>
         <Image source={{ uri: "https://storage.googleapis.com/support-forums-api/attachment/thread-28908032-12708632011346779300.jpg" }} style={styles.map} />
       </View>
-      <Card.Actions style={styles.buttonContainer}>
-        <Button mode="contained" onPress={() => setSelectedJob(null)} style={styles.button}>
-          ¡Chatea con el cliente!
-        </Button>
+      <Card.Actions>
+        <View style={styles.buttonsContainer}>
+          <Button mode="contained" onPress={applyToJob} style={styles.button}>
+            <Text style={styles.buttonText}>¡Postula a la chamba!</Text>
+          </Button>
+          <Button mode="contained" onPress={() => setSelectedJob(null)} style={styles.button}>
+            <Text style={styles.buttonText}>¡Chatea con el cliente!</Text>
+          </Button>
+        </View>
       </Card.Actions>
     </View>
   );
@@ -134,6 +168,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
     marginTop: 20
   },
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    gap: 30
+  },
   backButton: {
     backgroundColor: "#007AFF",
     padding: 10,
@@ -143,45 +184,43 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold"
   },
-  card: {
-    width: "90%",
-    marginVertical: 10,
-    borderRadius: 8,
-    overflow: "hidden"
+  cardTitle: {
+    fontSize: 30,
+    color: "#0D141C",
+    fontWeight: 700,
+    textAlign: "center"
   },
   image: {
     width: "100%",
     height: 200,
     resizeMode: "cover"
   },
-  header: {
+  jobDetailsContainer: {
     width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    gap: 30
-  },
-  horizontalContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 10
+    padding: "2%",
+    gap: 20
   },
   verticalContainer: {
     flexDirection: "column",
     textAlign: "left"
   },
-  detailText: {
-    fontSize: 16,
-    color: "gray"
+  horizontalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between"
   },
-  boldText: {
+  fieldTextBold: {
+    fontSize: 16,
     color: "black",
     fontWeight: "bold"
   },
-  price: {
-    fontSize: 20,
-    color: "#007AFF",
-    marginVertical: 5
+  fieldText: {
+    fontSize: 16,
+    color: "black",
+    fontWeight: "400"
+  },
+  jobDescriptionContainer: {
+    width: "100%",
+    flexDirection: "column"
   },
   description: {
     marginVertical: 10,
@@ -200,42 +239,21 @@ const styles = StyleSheet.create({
     height: 150,
     marginVertical: 10
   },
-  buttonContainer: {
+  buttonsContainer: {
     width: "100%",
-    flexDirection: "column"
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 20
   },
   button: {
     backgroundColor: "#2F80ED",
-    paddingVertical: "2%",
     borderRadius: 10,
-    fontWeight: 400,
-    fontSize: 17,
-    fontFamily: "Roboto",
-    width: "100%"
+    alignItems: "flex-start"
   },
-  cardTitle: {
-    fontSize: 30,
-    color: "#0D141C",
-    fontWeight: 700,
-    textAlign: "center"
-  },
-  fieldTextBold: {
-    fontSize: 16,
-    color: "#2F80ED",
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
     fontWeight: "bold"
-  },
-  fieldText: {
-    fontSize: 16,
-    color: "#2F80ED",
-    fontWeight: "400"
-  },
-  jobDetailsContainer: {
-    width: "100%",
-    padding: "2%",
-    gap: 20
-  },
-  jobDescriptionContainer: {
-    width: "100%",
-    flexDirection: "column"
   }
 });
