@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_versioning import VersionedFastAPI
-from app.routers import users, advertisement
+from app.routers import users, advertisement, login
 
 app = FastAPI()
 
@@ -9,6 +9,7 @@ origins = ["*"]
 
 app.include_router(users.router)
 app.include_router(advertisement.router)
+app.include_router(login.router)
 
 
 @app.get("/")
