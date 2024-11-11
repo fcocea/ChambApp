@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Header
+from fastapi import APIRouter, HTTPException, Query, Header, Response
 from fastapi_versioning import version
 from typing import List, Optional, Annotated
 from uuid import UUID
@@ -128,9 +128,9 @@ async def get_advertisement_info(ad_id: UUID):
         await close_db_connection(connection)
 
 
-@router.get("/{ad_id}/applications/", response_model=List[dict])
+@router.get("/{ad_id}/applications/", response_model=List[dict] | dict)
 @version(1)
-async def get_advertisement_applications(ad_id: UUID):
+async def get_advertisement_applications(ad_id: UUID, response: Response):
     connection = await connect_to_db()
     try:
         check_accepted_query = """
@@ -140,7 +140,9 @@ async def get_advertisement_applications(ad_id: UUID):
         """
         accepted_users = await connection.fetch(check_accepted_query, ad_id)
         if accepted_users:
-            raise HTTPException(status_code=204)
+            return {
+                "message": "Applications already accepted.",
+            }
 
         query = """
             SELECT 

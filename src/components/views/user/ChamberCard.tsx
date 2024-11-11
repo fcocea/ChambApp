@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
+import { Avatar } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function timeSince(startDate: Date): string {
@@ -20,27 +20,22 @@ function timeSince(startDate: Date): string {
   return `${months} ${months === 1 ? "mes" : "meses"}`;
 }
 
-export function ChamberCard({ data }: { data?: any }) {
+export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelectedChamber?: any }) {
   const router = useRouter();
   // const { setSelectedChamber } = useAdversitementUser();
   return (
     <Pressable
       className="flex flex-col w-full gap-1"
       onPress={() => {
-        // setSelectedChamber(data?.rut);
+        setSelectedChamber((prev: any) => ({
+          ...prev,
+          selected: data
+        }));
         router.push("./review");
       }}
     >
       <View className="w-full flex flex-row gap-3">
-        <Image
-          source="https://tresubresdobles.com/wp-content/uploads/2024/04/Captura-de-pantalla-2024-04-25-a-las-21.41.02.jpg"
-          contentFit="cover"
-          style={{
-            width: 96,
-            height: 96,
-            borderRadius: 50
-          }}
-        />
+        <Avatar size={96} name={`${data?.first_name} ${data?.last_name}`} />
         <View className="flex py-3 gap-3">
           <Text className="font-bold">
             {data?.first_name}
@@ -51,9 +46,14 @@ export function ChamberCard({ data }: { data?: any }) {
             <View className="flex text-sm items-center flex-row gap-1">
               <Feather name="star" color="black" />
               <Text>
-                {data?.average_score_as_chamber}
+                {Number(data?.average_score).toFixed(2)}
                 {" "}
-                (123 opiniones)
+                (
+                {data?.num_evaluations}
+                {" "}
+                opini
+                {data?.num_evaluations === 1 ? "ón" : "ones"}
+                )
               </Text>
             </View>
             <Text className="text-primary">180 tareas de este tipo</Text>
