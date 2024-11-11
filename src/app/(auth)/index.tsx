@@ -11,14 +11,15 @@ import { useAuth } from "@/hooks/useAuth";
 interface AuthForm {
   email: string;
   password: string;
+  mode: "chamber" | "user";
 }
 
 export default function Login() {
-  const { login, setAuthState, loading } = useAuth();
+  const { login, loading } = useAuth();
   const insets = useSafeAreaInsets();
 
   const { ...methods } = useForm<AuthForm>();
-  const onSubmit: SubmitHandler<AuthForm> = ({ email, password }) => login(email, password, () => methods.setError("email", { type: "manual", message: "Credenciales inválidas" }));
+  const onSubmit: SubmitHandler<AuthForm> = ({ email, password, mode }) => login(email, password, () => methods.setError("email", { type: "manual", message: "Credenciales inválidas" }), mode);
   const { formState: { errors } } = methods;
 
   return (
@@ -85,7 +86,7 @@ export default function Login() {
             <View className="flex gap-6">
               <TouchableOpacity
                 className={`w-full py-4 px-3 bg-primary rounded-xl ${loading ? "opacity-50" : ""}`}
-                onPress={() => methods.handleSubmit(onSubmit, e => console.log(e))()}
+                onPress={() => methods.handleSubmit(onSubmit)()}
                 disabled={loading}
               >
                 <View className="self-center">
@@ -97,7 +98,10 @@ export default function Login() {
               {Platform.OS === "ios" && (
                 <TouchableOpacity
                   className="w-full py-4 px-3 bg-[#333333] rounded-xl flex flex-row items-center justify-center gap-2"
-                  onPress={() => setAuthState({ mode: "user" })}
+                  onPress={() => {
+                    methods.setValue("mode", "chamber");
+                    methods.handleSubmit(onSubmit)();
+                  }}
                 >
                   <AppleIcon width={24} height={24} />
                   <Text className="text-white text-base font-medium">Acceder con Apple</Text>
@@ -105,7 +109,10 @@ export default function Login() {
               )}
               <TouchableOpacity
                 className="w-full py-4 px-3 rounded-xl border border-borderGray flex flex-row items-center justify-center gap-2"
-                onPress={() => setAuthState({ mode: "user" })}
+                onPress={() => {
+                  methods.setValue("mode", "chamber");
+                  methods.handleSubmit(onSubmit)();
+                }}
               >
                 <GoogleIcon width={24} height={24} />
                 <Text className="text-[#333333] text-center text-base font-medium">Acceder con Google</Text>

@@ -4,6 +4,8 @@ import { Button } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Inter_700Bold, useFonts } from "@expo-google-fonts/inter";
 
+import { useAuth } from "@/hooks/useAuth";
+
 import StarRating from "./starRating";
 
 const chamber = {
@@ -13,6 +15,7 @@ const chamber = {
 };
 
 export default function Profile() {
+  const { logout } = useAuth();
   const [fontsLoaded] = useFonts({
     Inter_700Bold
   });
@@ -55,7 +58,7 @@ export default function Profile() {
       <Button
         mode="contained"
         onPress={() => {
-          console.log("Logout");
+          logout();
         }}
         style={{ margin: 10 }}
       >

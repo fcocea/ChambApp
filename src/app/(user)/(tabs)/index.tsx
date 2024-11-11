@@ -4,15 +4,13 @@ import { Link } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
-  const { setAuthState } = useAuth();
+  const { logout, toggleMode } = useAuth();
   return (
     <View className="flex-1 justify-center items-center">
       <Text className="font-bold">User View </Text>
       <Button
         onPress={() => {
-          setAuthState({
-            mode: "chamber"
-          });
+          toggleMode();
         }}
         // className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         title="Modo Chamber"
@@ -21,7 +19,7 @@ export default function Index() {
 
       <Button
         onPress={() => {
-          setAuthState(null);
+          logout();
         }}
         title="Logout"
       />

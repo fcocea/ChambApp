@@ -22,11 +22,11 @@ interface AuthState {
 
 interface AuthContextProps {
   authState: AuthState | null;
-  setAuthState?: any;
   loading: boolean;
   firstLoading: boolean;
-  login: (user: string, password: string, callback: () => void) => void;
+  login: (user: string, password: string, callback: () => void, mode: "user" | "chamber") => void;
   logout: () => void;
+  toggleMode: () => void;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
@@ -34,7 +34,8 @@ export const AuthContext = createContext<AuthContextProps>({
   loading: true,
   firstLoading: true,
   login: () => {},
-  logout: () => {}
+  logout: () => {},
+  toggleMode: () => {}
 });
 
 const AuthProvider = ({ children }: PropsWithChildren) => {
@@ -45,6 +46,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     (async () => {
       const token = await SecureStore.getItemAsync("token");
+      const mode = await SecureStore.getItemAsync("mode");
       if (!token) {
         setFirstLoading(false);
         return;
@@ -64,7 +66,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         const data = await response.json();
         setAuthState({
           token,
-          mode: "user",
+          mode: data.can_be_chamber && mode === "chamber" ? "chamber" : "user",
           user: data
         });
       } catch (error) {
@@ -77,10 +79,41 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const logout = useCallback(() => {
     setAuthState(null);
-    SecureStore.deleteItemAsync("token");
+    (async () => {
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("mode");
+    })();
   }, []);
 
-  const login = useCallback((email: string, password: string, callback: () => void) => {
+  const toggleMode = useCallback(() => {
+    setAuthState(prevState => {
+      if (!prevState) {
+        return null;
+      }
+      if (prevState?.user?.can_be_chamber === false) {
+        return {
+          ...prevState,
+          mode: "user"
+        };
+      }
+      if (prevState?.mode === "user") {
+        return {
+          ...prevState,
+          mode: "chamber"
+        };
+      }
+      return {
+        ...prevState,
+        mode: "user"
+      };
+    });
+    (async () => {
+      const mode = await SecureStore.getItemAsync("mode");
+      await SecureStore.setItemAsync("mode", mode === "user" && authState?.user?.can_be_chamber ? "chamber" : "user");
+    })();
+  }, [authState?.user?.can_be_chamber]);
+
+  const login = useCallback((email: string, password: string, callback: () => void, mode: "user" | "chamber" = "user") => {
     setLoading(true);
     const doLogin = async () => {
       const formData = new FormData();
@@ -98,16 +131,17 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       const data = await response.json();
       setAuthState({
         token: data.token.access_token,
-        mode: "user",
+        mode: mode,
         user: data.user
       });
+      await SecureStore.setItemAsync("mode", mode);
       await SecureStore.setItemAsync("token", data.token.access_token);
       setLoading(false);
     };
     doLogin();
   }, []);
 
-  const values = useMemo(() => ({ authState, setAuthState, loading, login, firstLoading, logout }), [authState, firstLoading, loading, login, logout]);
+  const values = useMemo(() => ({ authState, loading, login, firstLoading, logout, toggleMode }), [authState, firstLoading, loading, login, logout, toggleMode]);
   return (
     <AuthContext.Provider value={values}>
       {children}
