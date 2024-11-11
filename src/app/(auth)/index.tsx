@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Controller, FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Link } from "expo-router";
@@ -8,11 +8,19 @@ import GoogleIcon from "@/components/icons/GoogleIcon";
 import { Separator } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 
+interface AuthForm {
+  email: string;
+  password: string;
+}
+
 export default function Login() {
   const { login, setAuthState, loading } = useAuth();
   const insets = useSafeAreaInsets();
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+
+  const { ...methods } = useForm<AuthForm>();
+  const onSubmit: SubmitHandler<AuthForm> = ({ email, password }) => login(email, password, () => methods.setError("email", { type: "manual", message: "Credenciales inválidas" }));
+  const { formState: { errors } } = methods;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -29,13 +37,55 @@ export default function Login() {
               </Text>
             </View>
             <View className="flex gap-4">
-              <TextInput placeholder="Ingresa tu correo" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" defaultValue={email} onChangeText={e => setEmail(e)} />
-              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" secureTextEntry defaultValue={password} onChangeText={e => setPassword(e)} />
+              <FormProvider {...methods}>
+                <View>
+                  <Controller
+                    name="email"
+                    rules={{
+                      required: "Este campo es requerido"
+                    }}
+                    render={({ field }) => (
+                      <TextInput
+                        placeholder="Ingresa tu correo"
+                        className={`w-full h-14  border rounded-xl px-5 ${errors?.email?.message ? "border-red-600" : "border-borderGray"}`}
+                        placeholderTextColor="#BDBDBD"
+                        keyboardType="email-address"
+                        defaultValue={field.value}
+                        onChangeText={field.onChange}
+                      />
+                    )}
+                  />
+                  <Text className={`${errors?.email?.message ? "" : "invisible"} text-sm text-red-600`}>
+                    {errors?.email?.message ? errors?.email?.message : "n/a"}
+                  </Text>
+                </View>
+                <View>
+                  <Controller
+                    name="password"
+                    rules={{
+                      required: "Este campo es requerido"
+                    }}
+                    render={({ field }) => (
+                      <TextInput
+                        placeholder="Ingresa tu contraseña"
+                        className={`w-full h-14  border rounded-xl px-5 ${errors?.password?.message ? "border-red-600" : "border-borderGray"}`}
+                        placeholderTextColor="#BDBDBD"
+                        defaultValue={field.value}
+                        onChangeText={field.onChange}
+                        secureTextEntry
+                      />
+                    )}
+                  />
+                  <Text className={`${errors?.password?.message ? "" : "invisible"} text-sm text-red-600`}>
+                    {errors?.password?.message ? errors?.password?.message : "n/a"}
+                  </Text>
+                </View>
+              </FormProvider>
             </View>
             <View className="flex gap-6">
               <TouchableOpacity
                 className={`w-full py-4 px-3 bg-primary rounded-xl ${loading ? "opacity-50" : ""}`}
-                onPress={() => login(email, password, () => console.log("Bad login"))}
+                onPress={() => methods.handleSubmit(onSubmit, e => console.log(e))()}
                 disabled={loading}
               >
                 <View className="self-center">
