@@ -11,21 +11,18 @@ SplashScreen.preventAutoHideAsync();
 SystemUI.setBackgroundColorAsync("white");
 
 const DynamicStack = () => {
-  const { authState, loading } = useAuth();
+  const { authState, firstLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
 
   useEffect(() => {
-    if (!loading) {
+    if (!firstLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loading]);
+  }, [firstLoading]);
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (segments[0] === "_sitemap") {
+    if (firstLoading) {
       return;
     }
     if (!authState && segments[0] !== "(auth)") {
@@ -36,8 +33,9 @@ const DynamicStack = () => {
       router.replace("/(chamber)");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authState, segments]);
-  return (<Slot screenOptions={{ animation: "slide_from_right" }} />);
+  }, [authState, segments, firstLoading]);
+
+  return !firstLoading && <Slot screenOptions={{ animation: "slide_from_right" }} />;
 };
 
 export default function RootLayout() {

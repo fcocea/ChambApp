@@ -1,4 +1,5 @@
-import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Link } from "expo-router";
 
@@ -8,8 +9,10 @@ import { Separator } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
-  const { setAuthState } = useAuth();
+  const { login, setAuthState, loading } = useAuth();
   const insets = useSafeAreaInsets();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -26,15 +29,19 @@ export default function Login() {
               </Text>
             </View>
             <View className="flex gap-4">
-              <TextInput placeholder="Ingresa tu correo" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" />
-              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" secureTextEntry />
+              <TextInput placeholder="Ingresa tu correo" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" defaultValue={email} onChangeText={e => setEmail(e)} />
+              <TextInput placeholder="Ingresa tu contraseña" className="w-full h-14 border-borderGray border rounded-xl px-5" placeholderTextColor="#BDBDBD" secureTextEntry defaultValue={password} onChangeText={e => setPassword(e)} />
             </View>
             <View className="flex gap-6">
               <TouchableOpacity
-                className="w-full py-4 px-3 bg-primary rounded-xl"
-                onPress={() => setAuthState({ mode: "chamber" })}
+                className={`w-full py-4 px-3 bg-primary rounded-xl ${loading ? "opacity-50" : ""}`}
+                onPress={() => login(email, password, () => console.log("Bad login"))}
+                disabled={loading}
               >
-                <Text className="text-white text-center text-base font-medium">Acceder</Text>
+                <View className="self-center">
+                  {loading && <ActivityIndicator color="#ffffff" className="absolute -left-8" />}
+                  <Text className="text-white text-center text-base font-medium  w-fit">Acceder</Text>
+                </View>
               </TouchableOpacity>
               <Separator text="o" />
               {Platform.OS === "ios" && (
