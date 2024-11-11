@@ -1,10 +1,9 @@
-import { Stack } from "expo-router";
+import React from "react";
+
+import MyComponent from "../../components/navegation";
 
 export default function RootLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="menu" />
-    </Stack>
+    <MyComponent />
   );
 }
