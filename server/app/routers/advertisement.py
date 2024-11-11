@@ -12,8 +12,8 @@ router = APIRouter(
 @router.get("/", response_model=List[dict])
 @version(1)
 async def get_advertisements(
-    area_id: Optional[int] = Query(default=None, description="ID del área"),
-    status: Optional[int] = Query(default=None, description="Estado del advertisement"),
+    area_id: Optional[int] = Query(default=None, description="Area ID"),
+    status: Optional[int] = Query(default=None, description="Advertisement status"),
 ):
     connection = await connect_to_db()
     try:
@@ -41,10 +41,10 @@ async def get_advertisements(
             """
         conditions = []
         params = []
-        if area_id:
+        if area_id is not None:
             params.append(area_id)
             conditions.append(f"aa.area_id = ${len(params)}")
-        if status:
+        if status is not None:
             params.append(status)
             conditions.append(f"ad.status = ${len(params)}")
         if conditions:
@@ -55,6 +55,7 @@ async def get_advertisements(
             ad.status, ad.price, ad.start_date, ad.address, 
             u.rut, u.first_name, u.last_name;
             """
+
         rows = await connection.fetch(query, *params)
         if not rows:
             raise HTTPException(status_code=404, detail="No advertisements found.")
