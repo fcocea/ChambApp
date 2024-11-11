@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { BottomNavigation, Text } from "react-native-paper";
+import { Searchbar } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { CommonActions } from "@react-navigation/native";
@@ -10,11 +12,11 @@ import Perfil from "@/app/(chamber)/profile";
 
 const Tab = createBottomTabNavigator();
 
-export default function MyComponent() {
+export default function NavBar() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false
+        headerShown: true
       }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar
@@ -63,12 +65,24 @@ export default function MyComponent() {
         component={Menu}
         options={{
           tabBarLabel: "Menú",
-          tabBarIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />
+          tabBarIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
+          header: () => (
+            <SafeAreaView>
+              <View>
+                <Text style={styles.header}> Home </Text>
+                <View style={styles.submenu}>
+                  <Text>Para ti</Text>
+                  <Text>Postulaciones</Text>
+                </View>
+                <View style={styles.divider} />
+              </View>
+            </SafeAreaView>
+          )
         }}
       />
       <Tab.Screen
         name="Buscar"
-        component={SettingsScreen}
+        component={SettingsSearch}
         options={{
           tabBarLabel: "Buscar",
           tabBarIcon: ({ color, size }) => <Icon name="magnify" size={size} color={color} />
@@ -102,10 +116,50 @@ function SettingsScreen() {
   );
 }
 
+const SettingsSearch = () => {
+  const [searchVisible] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  /*
+  const toggleSearchbar = () => {
+    setSearchVisible(!searchVisible);
+  };
+  */
+
+  return (
+    <View>
+      {searchVisible && (
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+        />
+      )}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center"
+  },
+  header: {
+    fontSize: 30,
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+  submenu: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center"
+  },
+  divider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "grey",
+    marginVertical: 10
   }
+
 });

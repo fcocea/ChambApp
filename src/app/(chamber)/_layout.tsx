@@ -1,9 +1,12 @@
 import React from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import MyComponent from "../../components/navegation";
+import NavBar from "../../components/navegation";
 
 export default function RootLayout() {
   return (
-    <MyComponent />
+    <SafeAreaProvider>
+      <NavBar />
+    </SafeAreaProvider>
   );
 }
