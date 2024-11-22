@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import JobList from "@/components/views/chamber/ChambaCard";
+import { useAuth } from "@/hooks/useAuth";
 
 import Summary from "./chambaView";
 
@@ -16,11 +17,8 @@ type Job = {
   price: number;
   start_date: string;
   address: string;
-  created_by: {
-    rut: string;
-    first_name: string;
-    last_name: string;
-  };
+  first_name: string;
+  last_name: string;
   image?: any;
 };
 
@@ -28,22 +26,26 @@ export default function Menu() {
   const [availableJobs, setAvailableJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const { authState } = useAuth();
 
   useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/advertisements`, {
+          headers: {
+            Authorization: authState?.token || ""
+          }
+        });
+        const data = await response.json();
+        setAvailableJobs(data);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/advertisements/?area_id=2&status=0`);
-      const data = await response.json();
-      setAvailableJobs(data);
-    } catch (error) {
-      console.error("Error fetching jobs:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [authState]);
 
   if (loading) {
     return (

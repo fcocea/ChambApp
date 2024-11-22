@@ -95,7 +95,7 @@ async def get_advertisement_info(ad_id: UUID):
         await close_db_connection(connection)
 
 
-@router.get("/{ad_id}/applications", response_model=List[dict])
+@router.get("/{ad_id}/applications", response_model=List[dict] | dict)
 @version(1)
 async def get_advertisement_applications(ad_id: UUID):
     connection = await connect_to_db()

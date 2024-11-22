@@ -85,7 +85,7 @@ export default function Chat() {
             }}
           >
             <View className="bg-primary rounded-full flex items-center justify-center w-[40px] h-[40px]">
-              <Feather name="send" size={22} color="white" />
+              <Feather name="send" size={18} color="white" />
             </View>
           </Send>
         )}

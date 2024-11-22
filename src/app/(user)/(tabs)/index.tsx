@@ -1,12 +1,16 @@
-import { Button, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Button, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-
+  const router = useRouter();
+  const { logout } = useAuth();
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       {/* Encabezado de Ubicación y Notificación */}
@@ -21,7 +25,7 @@ export default function Index() {
         </View>
 
         {/* Ícono de Campana con Notificación */}
-        <View>
+        <Pressable onPress={() => logout()}>
           <FontAwesome name="bell" size={24} color="#000" />
           <View
             style={{
@@ -34,7 +38,7 @@ export default function Index() {
               borderRadius: 4
             }}
           />
-        </View>
+        </Pressable>
       </View>
 
       {/* Mensaje de Bienvenida */}
@@ -55,7 +59,12 @@ export default function Index() {
       {/* Lista de anuncios */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}>
         {/* Card de anuncio */}
-        <TouchableOpacity className="mb-4 bg-white rounded-lg overflow-hidden shadow-md border border-gray-200">
+        <Pressable
+          className="mb-4 bg-white rounded-lg overflow-hidden shadow-md border border-gray-200"
+          onPress={() => {
+            router.push("./(advertisement)/advertisement/b0792a71-2029-40cf-86a5-51a652150257/select");
+          }}
+        >
           <Image source={{ uri: "https://i.pinimg.com/564x/b7/21/3d/b7213d2e2ca6435c504bfd4294c86288.jpg" }} style={{ width: "100%", height: 200 }} />
           <View className="p-4">
             <Text className="font-bold text-lg">Limpieza depto</Text>
@@ -73,9 +82,14 @@ export default function Index() {
               <Text className="text-white text-xs">Limpieza</Text>
             </View>
           </View>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity className="mb-4 bg-white rounded-lg overflow-hidden shadow-md border border-gray-200">
+        <Pressable
+          className="mb-4 bg-white rounded-lg overflow-hidden shadow-md border border-gray-200"
+          onPress={() => {
+            router.push("./(advertisement)/advertisement/beed073c-d0b9-4e00-a3ce-a815135c464c/select");
+          }}
+        >
           <Image source={{ uri: "https://i.pinimg.com/564x/4c/f2/2d/4cf22d2a0918485ae11edea29d6f1fc2.jpg" }} style={{ width: "100%", height: 200 }} />
           <View className="p-4">
             <Text className="font-bold text-lg">Paseo perros</Text>
@@ -90,7 +104,7 @@ export default function Index() {
               </View>
             </View>
           </View>
-        </TouchableOpacity>
+        </Pressable>
 
         <TouchableOpacity className="mb-4 bg-white rounded-lg overflow-hidden shadow-md border border-gray-200">
           <Image source={{ uri: "https://i.pinimg.com/564x/f4/41/5f/f4415f2a544f078589ce99dc240112d3.jpg" }} style={{ width: "100%", height: 200 }} />

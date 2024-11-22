@@ -11,11 +11,8 @@ type Job = {
   price: number;
   start_date: string;
   address: string;
-  created_by: {
-    rut: string;
-    first_name: string;
-    last_name: string;
-  };
+  first_name: string;
+  last_name: string;
   image?: any;
 };
 
@@ -59,9 +56,9 @@ const JobList: React.FC<JobListProps> = ({ availableJobs, setSelectedJob }) => (
                 Para:
                 {" "}
                 <Text>
-                  {job.created_by.first_name}
+                  {job.first_name}
                   {" "}
-                  {job.created_by.last_name}
+                  {job.last_name}
                 </Text>
               </Text>
               <Text style={styles.subText}>

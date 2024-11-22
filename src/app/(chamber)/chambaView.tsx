@@ -14,11 +14,8 @@ type Job = {
   price: number;
   start_date: string;
   address: string;
-  created_by: {
-    rut: string;
-    first_name: string;
-    last_name: string;
-  };
+  first_name: string;
+  last_name: string;
   image?: any;
 };
 
@@ -59,12 +56,13 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
   }
 
   const applyToJob = async () => {
+    console.log("apply", authState);
     try {
-      const response = await fetch(`${apiUrl}/advertisements/${job.ad_id}/apply/`, {
+      const response = await fetch(`${apiUrl}/advertisements/${job.ad_id}/apply`, {
         method: "POST",
+        mode: "cors",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `${authState?.token}`
+          Authorization: authState?.token || ""
         }
       });
 
@@ -100,9 +98,9 @@ export default function Summary({ job, setSelectedJob }: SummaryProps) {
               Para:
               {" "}
               <Text style={styles.fieldText}>
-                {job.created_by.first_name}
+                {job.first_name}
                 {" "}
-                {job.created_by.last_name}
+                {job.last_name}
               </Text>
             </Text>
             <Text style={styles.fieldTextBold}>
