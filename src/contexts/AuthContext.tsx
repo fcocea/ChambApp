@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 interface User {
@@ -45,8 +46,15 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     (async () => {
-      const token = await SecureStore.getItemAsync("token");
-      const mode = await SecureStore.getItemAsync("mode");
+      let token = null;
+      let mode = null;
+      if (Platform.OS === "web") {
+        token = localStorage.getItem("token");
+        mode = localStorage.getItem("mode");
+      } else {
+        token = await SecureStore.getItemAsync("token");
+        mode = await SecureStore.getItemAsync("mode");
+      }
       if (!token) {
         setFirstLoading(false);
         return;
