@@ -73,7 +73,7 @@ export default function Profile() {
             <View className="flex flex-row items-center justify-between">
               <View className="flex flex-col">
                 <Text className="font-bold text-base">Áreas</Text>
-                <Text className=" text-base">Pintura, Jardinería</Text>
+                <Text className=" text-base">Eléctrica, Soporte Informático</Text>
               </View>
               <Feather name="chevron-right" size={24} color="black" />
             </View>
