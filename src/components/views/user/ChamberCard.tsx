@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
 
 import { Avatar } from "@/components/ui";
@@ -17,7 +17,7 @@ function timeSince(startDate: Date): string {
     return `${weeks} ${weeks === 1 ? "semana" : "semanas"}`;
   }
   const months = Math.floor(days / 30);
-  return `${months} ${months === 1 ? "mes" : "meses"}`;
+  return `${months} ${months === 1 ? "" : ""}`;
 }
 
 export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelectedChamber?: any }) {
@@ -25,7 +25,7 @@ export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelec
   // const { setSelectedChamber } = useAdversitementUser();
   return (
     <Pressable
-      className="flex flex-col w-full gap-1"
+      className="flex flex-1 flex-col w-full gap-1 bg-white rounded-2xl px-4 py-4 shadow-md"
       onPress={() => {
         setSelectedChamber((prev: any) => ({
           ...prev,
@@ -34,47 +34,52 @@ export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelec
         router.push("./review");
       }}
     >
-      <View className="w-full flex flex-row gap-3">
-        <Avatar size={96} name={`${data?.first_name} ${data?.last_name}`} />
-        <View className="flex py-3 gap-3">
-          <Text className="font-bold">
-            {data?.first_name}
-            {" "}
-            {data?.last_name}
-          </Text>
-          <View className="flex text-sm">
-            <View className="flex text-sm items-center flex-row gap-1">
-              <Feather name="star" color="black" />
-              <Text>
-                {Number(data?.average_score).toFixed(2)}
+      <View className="w-full flex flex-row gap-4 items-center">
+        <View>
+          <Avatar size={120} name={`${data?.first_name} ${data?.last_name}`} />
+        </View>
+        <View className="w-full flex flex-1 flex-col gap-3">
+          <View className="w-full flex flex-col mt-2">
+            <Text className="font-bold text-xl">
+              {data?.first_name}
+              {" "}
+              {data?.last_name}
+            </Text>
+            <View>
+              <Text className="text-base text-primary font-semibold">
+                <FontAwesome name="star" size={12} className="text-primary" />
                 {" "}
-                (
-                {data?.num_evaluations}
-                {" "}
-                opini
-                {data?.num_evaluations === 1 ? "ón" : "ones"}
-                )
+                { Number(data?.average_score).toFixed(2)}
               </Text>
             </View>
-            <Text className="text-primary">180 tareas de este tipo</Text>
-            <Text>
-              {timeSince(new Date(data?.account_creation_date))}
-              {" "}
-              siendo
-              {" "}
-              <Text className="text-primary">Chamber</Text>
-            </Text>
+          </View>
+          <View className="flex items-center flex-row justify-around bg-[#eaeff5] p-2 rounded-xl">
+            <View>
+              <Text className="text-center text-base text-primary font-semibold">Tareas</Text>
+              <Text className="text-center text-xl font-bold">{180}</Text>
+            </View>
+            <View>
+              <Text className="text-center text-base text-primary font-semibold">Meses</Text>
+              <Text className="text-center text-xl font-bold">{timeSince(new Date(data?.account_creation_date))}</Text>
+            </View>
+
           </View>
         </View>
       </View>
-      <View className="flex flex-col p-3 text-xs bg-[#F2F7FB] gap-[15px]">
-        <Text className="line-clamp-2 text-[rgba(0,_14,_8,_0.49)]">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at purus at nulla facilisis ultrices. Integer vitae justo nec velit ultrices tempus.
-        </Text>
-        <Pressable onPress={() => console.log("Ver perfil de un chamber!")}>
-          <Text className="text-primary text-base font-medium">Ver más</Text>
+      {/* <View className="flex flex-col p-3 text-xs gap-[15px]">
+        <Pressable
+          className="justify-end flex rounded-lg px-4 py-2 ml-auto bg-primary "
+          onPress={() => {
+            setSelectedChamber((prev: any) => ({
+              ...prev,
+              selected: data
+            }));
+            router.push("./review");
+          }}
+        >
+          <Text className="text-white text-base font-medium text-center">Confirmar</Text>
         </Pressable>
-      </View>
+      </View> */}
     </Pressable>
   );
 }
