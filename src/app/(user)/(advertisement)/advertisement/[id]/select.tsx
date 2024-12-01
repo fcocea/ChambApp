@@ -60,10 +60,10 @@ export default function AdvertisementSelect() {
     fetchData();
   }, [id, setAdvertisementData]);
   return (
-    <View className="flex-1 bg-white w-full h-full px-6 flex gap-8 pt-6" style={{ paddingBottom: insets.bottom }}>
+    <View className="flex-1 bg-[#eaeff5] w-full h-full px-6 flex gap-5 pt-6" style={{ paddingBottom: insets.bottom }}>
       { isLoading
         ? (
-            <Skeleton height={162} borderRadius={12} />
+            <Skeleton height={150} borderRadius={12} />
           )
         : (
             <Pressable
@@ -79,14 +79,15 @@ export default function AdvertisementSelect() {
             >
               <View className="flex gap-1">
                 <Text className="text-white text-xl font-medium line-clamp-1">{data?.info?.title}</Text>
-                <Text className="text-white text-xs">{data?.info?.description}</Text>
-                <Text className="text-white text-xs">{new Date(data?.info?.start_date || "").toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+                {/* <Text className="text-white text-xs">Edmundo Larenas 219, Concepción</Text> */}
+                <Text className="text-white text-sm">{data?.info?.description}</Text>
+                <Text className="text-white text-sm">{new Date(data?.info?.start_date || "").toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
               </View>
               <View className="flex flex-row justify-between items-center">
                 <View className="flex flex-row gap-5">
                   {
                     data?.info.areas.map((area: string, index: number) => (
-                      <View key={index} className="px-[10px] py-[5px] rounded-md flex justify-center items-center bg-[#496786]">
+                      <View key={index} className="bg-[#466987] px-[10px] py-[5px] rounded-md flex justify-center items-center">
                         <Text className="text-white text-sm">{area}</Text>
                       </View>
                     ))
@@ -99,7 +100,7 @@ export default function AdvertisementSelect() {
             </Pressable>
           )}
       <Separator text="Ordenar por: Recomendado" />
-      <ScrollView className="w-full h-full flex flex-col" contentContainerClassName="gap-8 pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="w-full h-full flex flex-col" contentContainerClassName="gap-5 pb-8" showsVerticalScrollIndicator={false}>
         {isLoading
           ? Array.from({ length: 6 }).map((_, index) => (
             <ChamberCardSkeleton key={index} />

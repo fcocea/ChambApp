@@ -14,6 +14,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Perfil",
+          headerShown: true,
+          headerShadowVisible: false,
+          headerTintColor: "#FFFF",
+          headerStyle: {
+            backgroundColor: "#1B456D"
+          },
+          tabBarIcon: ({ color }) => <Feather size={24} name="home" color={color} />
+        }}
+      />
+      <Tabs.Screen
         name="(messages)"
         options={{
           title: "Mensajes",
