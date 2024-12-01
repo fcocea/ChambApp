@@ -42,15 +42,15 @@ export default function RootLayout() {
   return (
     <AdvertisementContext.Provider value={{ advertisementData, setAdvertisementData }}>
       <Stack screenOptions={{
-        headerTintColor: "#333333",
+        headerTintColor: "#FFFF",
         headerBackTitleVisible: false,
         headerStyle: {
-          backgroundColor: "#FAFAFA"
+          backgroundColor: "#1B456D"
         },
         headerShadowVisible: false,
         headerLeft: () => (
           <Pressable onPress={() => router.back()} className="mr-2">
-            <Feather name="chevron-left" size={24} color="black" />
+            <Feather name="chevron-left" size={24} color="#FFFF" />
           </Pressable>
         )
       }}
