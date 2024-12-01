@@ -206,7 +206,7 @@ class AdvertisementCreate(BaseModel):
     title: str
     description: str
     price: int
-    start_date: datetime
+    start_date: int
     address: str
     areas: List[int]
 
@@ -224,15 +224,15 @@ async def advertisement_create(
     connection = await connect_to_db()
     try:
         query_check_active_advertisement = """
-            SELECT 1 
+            SELECT count(*) 
             FROM "Advertisement" 
             WHERE created_by = $1 
             AND status IN (0, 1)
-            LIMIT 1;
+            LIMIT 3;
         """
         existing_ad = await connection.fetchval(query_check_active_advertisement, rut)
 
-        if existing_ad:
+        if existing_ad > 3:
             raise HTTPException(
                 status_code=400, detail="User already has an active advertisement"
             )
@@ -261,7 +261,9 @@ async def advertisement_create(
                 advertisement.title,
                 advertisement.description,
                 advertisement.price,
-                advertisement.start_date,
+                datetime.fromtimestamp(advertisement.start_date / 1000).replace(
+                    tzinfo=None
+                ),
                 rut,
                 advertisement.address,
                 advertisement.areas,
@@ -271,7 +273,7 @@ async def advertisement_create(
             "title": advertisement.title,
             "description": advertisement.description,
             "price": advertisement.price,
-            "start_date": advertisement.start_date.isoformat(),
+            "start_date": advertisement.start_date,
             "address": advertisement.address,
             "areas": advertisement.areas,
             "status": "Created",

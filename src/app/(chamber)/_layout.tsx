@@ -1,12 +1,13 @@
-import React from "react";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Stack } from "expo-router";
 
-import NavBar from "../../components/navegation";
+export const unstable_settings = {
+  initialRouteName: "(tabs)"
+};
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <NavBar />
-    </SafeAreaProvider>
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 }
