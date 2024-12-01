@@ -36,7 +36,7 @@ export default function MessagesLayout() {
         headerTintColor: "#333333",
         headerBackTitleVisible: false,
         headerStyle: {
-          backgroundColor: "#ffffff"
+          backgroundColor: "#FAFAFA"
         },
         animation: "slide_from_right",
         headerShadowVisible: false,

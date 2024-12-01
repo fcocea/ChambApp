@@ -50,7 +50,7 @@ export default function Chat() {
 
   return (
     <View
-      className="flex-1 bg-white w-full h-full min-h-[90vh] px-4"
+      className="flex-1 bg-background w-full h-full min-h-[90vh] px-4"
       style={{
         paddingBottom: insets.bottom
       }}

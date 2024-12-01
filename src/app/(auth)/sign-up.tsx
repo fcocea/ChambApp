@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui";
 export default function SignUp() {
   return (
     <KeyboardAvoidingView
-      className="flex-1 items-center bg-white w-full h-full px-6 gap-8"
+      className="flex-1 items-center bg-background w-full h-full px-6 gap-8"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       enabled
     >
@@ -34,7 +34,7 @@ export default function SignUp() {
               <TouchableOpacity className="w-full py-4 px-3 bg-primary rounded-xl">
                 <Text className="text-white text-center text-base font-medium">Continuar</Text>
               </TouchableOpacity>
-              <Separator text="o" />
+              <Separator text="o" color="#E5E7EB" />
               <TouchableOpacity className="w-full py-4 px-3 bg-[#333333] rounded-xl flex flex-row items-center justify-center gap-2">
                 <AppleIcon width={24} height={24} />
                 <Text className="text-white text-base font-medium">Registrarse con Apple</Text>

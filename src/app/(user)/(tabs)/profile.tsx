@@ -16,7 +16,7 @@ export default function Profile() {
     <View className="flex-1 h-full w-full bg-primary pt-20">
       <View className="flex flex-col relative rounded-t-[32px] mt-16 pt-6 flex-1 gap-6 w-full">
         <View
-          className="absolute top-[-50px] right-0 h-[200px] bg-white"
+          className="absolute top-[-50px] right-0 h-[200px] bg-background"
           style={
             {
               left: toLeft,
@@ -83,7 +83,7 @@ export default function Profile() {
                 </TouchableOpacity>
               )}
               <TouchableOpacity
-                className={`w-full py-4 px-3 bg-white border-borderGray border rounded-xl `}
+                className={`w-full py-4 px-3 border-borderGray border rounded-xl `}
                 onPress={() => logout()}
               >
                 <View className="self-center">

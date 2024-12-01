@@ -75,13 +75,13 @@ export default function Messages() {
   }, []);
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-background"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       enabled
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 w-full h-full flex px-4 gap-3">
-          <View className="flex flex-row bg-[#F3F6F6] w-full h-9 justify-center items-center gap-2 px-3 rounded-2xl">
+          <View className="flex flex-row bg-foreground border border-separator w-full h-12 justify-center items-center gap-2 px-3 rounded-2xl">
             <Feather name="search" size={20} color="333333" />
             <TextInput className="flex-1 h-full w-full py-[7px]" placeholder="Buscar mensaje" />
           </View>

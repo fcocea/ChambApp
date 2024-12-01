@@ -20,7 +20,7 @@ export default function Create() {
   };
 
   return (
-    <View className="flex flex-col gap-0 py-4 px-6">
+    <View className="flex flex-col gap-0 py-4 px-6 bg-background flex-1">
       <FormProvider {...methods}>
         <View className="gap-3">
           <Text className="font-bold text-xl">

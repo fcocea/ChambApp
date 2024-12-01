@@ -5,39 +5,42 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { ArrowRight } from "lucide-react-native";
+import { ArrowRight, Bell, ChevronDown, Plus } from "lucide-react-native";
 
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
 const screenWidth = Dimensions.get("window").width;
 
-const AdvertisementCard = () => (
-  <Pressable className="flex bg-white rounded-2xl overflow-hidden w-full" style={{ width: (screenWidth - 48) - 4 }}>
-    <Image source={{ uri: "https://i.pinimg.com/564x/b7/21/3d/b7213d2e2ca6435c504bfd4294c86288.jpg" }} style={{ width: "100%", height: 180 }} />
-    <View className="flex flex-row justify-between absolute right-1 top-2 gap-2">
-      <View className="bg-[#F8F9FD] rounded-md px-2 py-1">
-        <Text className="text-xs">
-          Categoria
-        </Text>
-      </View>
-      <View className="bg-[#F8F9FD] rounded-md px-2 py-1">
-        <Text className="text-xs">
-          Categoria
-        </Text>
-      </View>
-    </View>
-    <View className="flex flex-col p-4">
-      <View className="flex flex-row justify-between items-center">
-        <Text className="font-semibold text-[#333] text-lg">Anuncio 1</Text>
-        <View className="bg-primary rounded-md px-2 py-1">
-          <Text className="text-xs text-white">En progreso</Text>
+const AdvertisementCard = () => {
+  const router = useRouter();
+  return (
+    <Pressable className="flex bg-white rounded-2xl overflow-hidden w-full" style={{ width: (screenWidth - 48) - 4 }} onPress={() => router.push("./(advertisement)/advertisement/beed073c-d0b9-4e00-a3ce-a815135c464c/select")}>
+      <Image source={{ uri: "https://i.pinimg.com/564x/b7/21/3d/b7213d2e2ca6435c504bfd4294c86288.jpg" }} style={{ width: "100%", height: 180 }} />
+      <View className="flex flex-row justify-between absolute right-1 top-2 gap-2">
+        <View className="bg-[#FAFAFA] rounded-md px-2 py-1">
+          <Text className="text-xs">
+            Categoria
+          </Text>
+        </View>
+        <View className="bg-[#FAFAFA] rounded-md px-2 py-1">
+          <Text className="text-xs">
+            Categoria
+          </Text>
         </View>
       </View>
-      <Text className="text-sm text-[#50647D]">{new Date(new Date()).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
-    </View>
-  </Pressable>
-);
+      <View className="flex flex-col p-4">
+        <View className="flex flex-row justify-between items-center">
+          <Text className="font-semibold text-[#333] text-lg">Anuncio 1</Text>
+          <View className="bg-primary rounded-md px-2 py-1">
+            <Text className="text-xs text-white">En progreso</Text>
+          </View>
+        </View>
+        <Text className="text-sm text-[#50647D]">{new Date(new Date()).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+      </View>
+    </Pressable>
+  );
+};
 
 const AdvertisementCardSkeleton = () => (
   <View className="flex bg-white rounded-2xl overflow-hidden w-full" style={{ width: (screenWidth - 48) - 4 }}>
@@ -84,6 +87,7 @@ export default function Index() {
   const { logout } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+
   useEffect(() => {
     (async () => {
       await new Promise(resolve => setTimeout(resolve, 5000));
@@ -93,21 +97,22 @@ export default function Index() {
 
   return (
     <View className="flex-1 bg-primary h-full w-full" style={{ paddingTop: insets.top }}>
-      <View className="px-6 flex flex-col gap-8">
+      <View className="px-6 flex flex-col gap-8 pt-1">
         <View className="flex-row items-center justify-between">
-          <View className="flex flex-row gap-2">
+          <View className="flex flex-row gap-2 items-center">
             <Text className="text-white text-base font-semibold justify-center ">
               Edmundo Larenas 123
             </Text>
-            <Feather name="chevron-down" size={24} color="white" />
+            <ChevronDown size={20} color="white" />
           </View>
           <Pressable
-            className="flex flex-row items-center rounded-full border-[#F5F5F7] border-[1px] p-2"
+            className="flex flex-row items-center rounded-full border-[#FAFAFA] border-[1px] p-2"
             onPress={() => {
               logout();
             }}
           >
-            <Feather name="bell" size={18} color="white" />
+            <Bell size={18} color="white" />
+            <View className="bg-red-500 rounded-full w-2 h-2 absolute top-1 right-[9px]" />
           </Pressable>
         </View>
         <View>
@@ -115,56 +120,59 @@ export default function Index() {
           <Text className="text-sm text-gray-300">Encuentra la solución a tus problemas</Text>
         </View>
       </View>
-      <View className="flex flex-col px-6 bg-[#F8F9FD] rounded-t-[32px] mt-16 pt-6 gap-6 h-full flex-1">
-        {/* <View
-          className="absolute top-[-70px] rounded-t-[400px] bg-white"
+      <View className="absolute right-1/2 translate-x-1/2 top-[-45px] h-20 w-20 rounded-full bg-primary" />
+      <View className="flex flex-col bg-[#FAFAFA] rounded-t-[32px] mt-16 pt-6 gap-6 h-full flex-1">
+        <View
+          className="absolute top-[-25px] rounded-t-[1000px] bg-[#FAFAFA]"
           style={{
-            width: screenWidth * 1.8,
-            height: screenWidth * 1.8,
-            left: -((screenWidth * 1.8 - screenWidth) / 2)
+            width: screenWidth * 1.6,
+            height: screenWidth * 0.6,
+            left: -((screenWidth * 1.6 - screenWidth) / 2)
           }}
-        /> */}
-        <View className="flex flex-col gap-5">
-          <View className="flex flex-row justify-between w-full items-center">
-            <Text className="text-2xl text-[#50647D] font-semibold">Anuncios activos</Text>
-            <View className="flex flex-row items-center gap-1">
-              {/* <Text className="text-[#333] font-semibold text-base">Ver todos</Text> */}
-              {/* <ArrowRight size={18} color="#080808" /> */}
-              <Pressable onPress={() => router.push("/(user)/(advertisement)/create")}>
-                <Text className="text-[#333] font-semibold text-base">Crear</Text>
-                {/* <ArrowRight size={18} color="#080808" /> */}
-              </Pressable>
+        />
+        <View className="absolute right-1/2 translate-x-1/2 top-[-50px] h-20 w-20 rounded-full bg-primary" />
+        <Pressable className="absolute right-1/2 translate-x-1/2 top-[-42px] h-16 w-16 rounded-full bg-white items-center justify-center" onPress={() => router.push("/(user)/(advertisement)/create")}>
+          <Plus size={28} color="#1b456d" />
+        </Pressable>
+        <View className="flex flex-col px-6 gap-6 flex-grow">
+          <View className="flex flex-col gap-5 w-full flex-1">
+            <View className="flex flex-row justify-between w-full items-center">
+              <Text className="text-2xl text-[#50647D] font-semibold">Anuncios activos</Text>
+              {/* <View className="flex flex-row items-center gap-1">
+                <Text className="text-[#333] font-semibold text-base">Ver todos</Text>
+                <ArrowRight size={18} color="#333" />
+              </View> */}
+            </View>
+            <View className="flex-grow">
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} pagingEnabled className="w-full">
+                {loading
+                  ? Array.from({ length: 2 }).map((_, index) => (
+                    <AdvertisementCardSkeleton key={index} />
+                  ))
+                  : Array.from({ length: 3 }).map((_, index) => (
+                    <AdvertisementCard key={index} />
+                  ))}
+              </ScrollView>
             </View>
           </View>
-          <View className="flex-grow">
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} pagingEnabled className="w-full">
+          <View className="flex flex-col gap-5 w-full flex-1">
+            <View className="flex flex-row justify-between w-full items-center">
+              <Text className="text-2xl text-[#50647D] font-semibold">Historial de anuncios</Text>
+              <Pressable className="flex flex-row items-center gap-1">
+                <Text className="text-[#333333] font-semibold text-base">Ver todos</Text>
+                <ArrowRight size={18} color="#333333" />
+              </Pressable>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {loading
-                ? Array.from({ length: 2 }).map((_, index) => (
-                  <AdvertisementCardSkeleton key={index} />
+                ? Array.from({ length: 5 }).map((_, index) => (
+                  <AdvertisementHistoryCardSkeleton key={index} />
                 ))
-                : Array.from({ length: 3 }).map((_, index) => (
-                  <AdvertisementCard key={index} />
+                : Array.from({ length: 2 }).map((_, index) => (
+                  <AdvertisementHistoryCard key={index} status="active" />
                 ))}
             </ScrollView>
           </View>
-        </View>
-        <View className="flex flex-col gap-5 w-full flex-1">
-          <View className="flex flex-row justify-between w-full items-center">
-            <Text className="text-2xl text-[#50647D] font-semibold">Historial de anuncios</Text>
-            <View className="flex flex-row items-center gap-1">
-              <Text className="text-[#333] font-semibold text-base">Ver todos</Text>
-              <ArrowRight size={18} color="#080808" />
-            </View>
-          </View>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-            {loading
-              ? Array.from({ length: 5 }).map((_, index) => (
-                <AdvertisementHistoryCardSkeleton key={index} />
-              ))
-              : Array.from({ length: 1 }).map((_, index) => (
-                <AdvertisementHistoryCard key={index} status="active" />
-              ))}
-          </ScrollView>
         </View>
       </View>
     </View>

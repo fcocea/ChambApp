@@ -60,7 +60,7 @@ export default function AdvertisementSelect() {
     fetchData();
   }, [id, setAdvertisementData]);
   return (
-    <View className="flex-1 bg-[#eaeff5] w-full h-full px-6 flex gap-5 pt-6" style={{ paddingBottom: insets.bottom }}>
+    <View className="flex-1 bg-[#FAFAFA] w-full h-full px-6 flex gap-5 pt-6" style={{ paddingBottom: insets.bottom }}>
       { isLoading
         ? (
             <Skeleton height={150} borderRadius={12} />

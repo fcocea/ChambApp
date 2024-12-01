@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import "@/global.css";
 
 SplashScreen.preventAutoHideAsync();
-SystemUI.setBackgroundColorAsync("white");
+SystemUI.setBackgroundColorAsync("#FAFAFA");
 
 const DynamicStack = () => {
   const { authState, firstLoading } = useAuth();

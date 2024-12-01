@@ -26,7 +26,7 @@ export default function Login() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       enabled
-      className="flex-1 bg-[#FFFF] px-6"
+      className="flex-1 bg-background px-6"
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex justify-between flex-1">
@@ -94,7 +94,7 @@ export default function Login() {
                   <Text className="text-white text-center text-base font-medium  w-fit">Acceder</Text>
                 </View>
               </TouchableOpacity>
-              <Separator text="o" />
+              <Separator text="o" color="#E5E7EB" />
               {Platform.OS === "ios" && (
                 <TouchableOpacity
                   className="w-full py-4 px-3 bg-[#333333] rounded-xl flex flex-row items-center justify-center gap-2"
