@@ -45,7 +45,7 @@ export default function AdvertisementSelect() {
         const [infoData, applicationsData] = await Promise.all([info.json(), applications.json()]);
         setData({
           info: infoData,
-          applications: applicationsData?.message ? [] : applicationsData
+          applications: applicationsData?.detail ? [] : applicationsData
         });
         setAdvertisementData({
           info: infoData
@@ -68,13 +68,12 @@ export default function AdvertisementSelect() {
         : (
             <Pressable
               onPress={() => console.log("Ver detalles del anuncio")}
-              className="w-full bg-primary rounded-xl h-[162px] px-6 py-[25px] justify-between"
+              className="w-full bg-primary rounded-xl h-[162px] px-6 py-[25px] justify-between shadow-primary"
               style={{
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.25,
                 shadowRadius: 10,
-                elevation: 5,
-                shadowColor: "rgba(47, 128, 237, 1)"
+                elevation: 5
               }}
             >
               <View className="flex gap-1">
@@ -100,14 +99,18 @@ export default function AdvertisementSelect() {
             </Pressable>
           )}
       <Separator text="Ordenar por: Recomendado" />
-      <ScrollView className="w-full h-full flex flex-col" contentContainerClassName="gap-5 pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="w-full h-full flex flex-col" contentContainerClassName="gap-5 pb-8" showsVerticalScrollIndicator={false} alwaysBounceVertical={false}>
         {isLoading
-          ? Array.from({ length: 6 }).map((_, index) => (
+          ? Array.from({ length: 3 }).map((_, index) => (
             <ChamberCardSkeleton key={index} />
           ))
-          : data?.applications.map((data, index) => (
-            <ChamberCard key={index} data={data} setSelectedChamber={setAdvertisementData} />
-          ))}
+          : data?.applications && data?.applications?.length > 0
+            ? data?.applications.map((data, index) => (
+              <ChamberCard key={index} data={data} setSelectedChamber={setAdvertisementData} />
+            ))
+            : (
+                <Text className="text-sm text-[#50647D] text-center">En este momento no hay candidatos para este anuncio.</Text>
+              )}
       </ScrollView>
     </View>
   );
