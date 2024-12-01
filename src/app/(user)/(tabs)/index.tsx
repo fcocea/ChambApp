@@ -4,6 +4,7 @@ import { Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { ArrowRight } from "lucide-react-native";
 
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -82,6 +83,7 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const { logout } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
   useEffect(() => {
     (async () => {
       await new Promise(resolve => setTimeout(resolve, 5000));
@@ -125,10 +127,14 @@ export default function Index() {
         <View className="flex flex-col gap-5">
           <View className="flex flex-row justify-between w-full items-center">
             <Text className="text-2xl text-[#50647D] font-semibold">Anuncios activos</Text>
-            {/* <View className="flex flex-row items-center gap-1">
-              <Text className="text-[#333] font-semibold text-base">Ver todos</Text>
-              <ArrowRight size={18} color="#080808" />
-            </View> */}
+            <View className="flex flex-row items-center gap-1">
+              {/* <Text className="text-[#333] font-semibold text-base">Ver todos</Text> */}
+              {/* <ArrowRight size={18} color="#080808" /> */}
+              <Pressable onPress={() => router.push("/(user)/(advertisement)/create")}>
+                <Text className="text-[#333] font-semibold text-base">Crear</Text>
+                {/* <ArrowRight size={18} color="#080808" /> */}
+              </Pressable>
+            </View>
           </View>
           <View className="flex-grow">
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} pagingEnabled className="w-full">

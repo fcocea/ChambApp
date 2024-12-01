@@ -57,6 +57,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="advertisement/[id]/review" options={{ title: "Revisar y confirmar" }} />
         <Stack.Screen name="advertisement/[id]/select" options={{ title: "Selecciona a tu chamber" }} />
+        <Stack.Screen name="advertisement/create" options={{ title: "Crear publicación" }} />
       </Stack>
     </AdvertisementContext.Provider>
   );
