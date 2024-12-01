@@ -258,83 +258,85 @@ export default function Index() {
           </Pressable>
         </View>
       </View>
-      <ScrollView
-        className="bg-primary"
-        refreshControl={(
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#1B456D"]}
-            progressBackgroundColor="#fff"
-            tintColor="#FFF"
-          />
-        )}
-        contentContainerClassName="flex-1 h-full"
-        showsVerticalScrollIndicator={false}
-        alwaysBounceVertical={false}
+      <View className="flex-grow bg-background">
+        <ScrollView
+          className="bg-primary"
+          refreshControl={(
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#1B456D"]}
+              progressBackgroundColor="#fff"
+              tintColor="#FFF"
+            />
+          )}
+          contentContainerClassName="flex-grow"
+          showsVerticalScrollIndicator={false}
+          alwaysBounceVertical={false}
         // bounces={false}
-      >
-        <View className="px-6 mt-10 mb-20">
-          <Text className="text-white text-3xl font-semibold">Qué necesitai hacer 🤙?</Text>
-          <Text className="text-sm text-gray-300">Encuentra la solución a tus problemas</Text>
-        </View>
-        {/* Contenido principal */}
-        <View className="flex flex-col bg-[#FAFAFA] rounded-t-[32px] pt-6 gap-6 h-full">
-          <View
-            className="absolute top-[-25px] rounded-t-[1000px] bg-[#FAFAFA]"
-            style={{
-              width: screenWidth * 1.6,
-              height: screenWidth * 0.6,
-              left: -((screenWidth * 1.6 - screenWidth) / 2)
-            }}
-          />
-          <View className="absolute right-1/2 translate-x-1/2 top-[-50px] h-20 w-20 rounded-full bg-primary" />
-          <Pressable className="absolute right-1/2 translate-x-1/2 top-[-42px] h-16 w-16 rounded-full bg-white items-center justify-center" onPress={() => router.push("/(user)/(advertisement)/create")}>
-            <Plus size={28} color="#1b456d" />
-          </Pressable>
-          <View className="px-6 flex flex-col gap-6">
-            <View className="flex flex-col gap-5">
-              <View className="flex flex-row justify-between items-center">
-                <Text className="text-2xl text-[#50647D] font-semibold">Anuncios activos</Text>
+        >
+          <View className="px-6 mt-10 mb-20">
+            <Text className="text-white text-3xl font-semibold">Qué necesitai hacer 🤙?</Text>
+            <Text className="text-sm text-gray-300">Encuentra la solución a tus problemas</Text>
+          </View>
+          {/* Contenido principal */}
+          <View className="flex flex-col bg-[#FAFAFA] rounded-t-[32px] pt-6 gap-6 h-full">
+            <View
+              className="absolute top-[-25px] rounded-t-[1000px] bg-[#FAFAFA]"
+              style={{
+                width: screenWidth * 1.6,
+                height: screenWidth * 0.6,
+                left: -((screenWidth * 1.6 - screenWidth) / 2)
+              }}
+            />
+            <View className="absolute right-1/2 translate-x-1/2 top-[-50px] h-20 w-20 rounded-full bg-primary" />
+            <Pressable className="absolute right-1/2 translate-x-1/2 top-[-42px] h-16 w-16 rounded-full bg-white items-center justify-center" onPress={() => router.push("/(user)/(advertisement)/create")}>
+              <Plus size={28} color="#1b456d" />
+            </Pressable>
+            <View className="px-6 flex flex-col gap-6">
+              <View className="flex flex-col gap-5">
+                <View className="flex flex-row justify-between items-center">
+                  <Text className="text-2xl text-[#50647D] font-semibold">Anuncios activos</Text>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8 }}
+                  pagingEnabled
+                >
+                  {loading
+                    ? Array.from({ length: 2 }).map((_, index) => (
+                      <AdvertisementCardSkeleton key={index} />
+                    ))
+                    : advertisements.map((data, index) => (
+                      <AdvertisementCard key={index} data={data} />
+                    ))}
+                </ScrollView>
               </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 8 }}
-                pagingEnabled
-              >
-                {loading
-                  ? Array.from({ length: 2 }).map((_, index) => (
-                    <AdvertisementCardSkeleton key={index} />
-                  ))
-                  : advertisements.map((data, index) => (
-                    <AdvertisementCard key={index} data={data} />
-                  ))}
-              </ScrollView>
-            </View>
-            {/* Historial de anuncios */}
-            <View className="flex flex-col gap-5">
-              <View className="flex flex-row justify-between items-center">
-                <Text className="text-2xl text-[#50647D] font-semibold">Ultimos anuncios</Text>
-                <Pressable className="flex flex-row items-center gap-1">
-                  <Text className="text-[#333333] font-semibold text-base">Ver todos</Text>
-                  <ArrowRight size={18} color="#333333" />
-                </Pressable>
-              </View>
-              {/* Contenedor del ScrollView limitado */}
-              <View className="flex-grow flex gap-2">
-                {loading
-                  ? Array.from({ length: 3 }).map((_, index) => (
-                    <AdvertisementHistoryCardSkeleton key={index} />
-                  ))
-                  : Array.from({ length: 3 }).map((_, index) => (
-                    <AdvertisementHistoryCard key={index} status="active" />
-                  ))}
+              {/* Historial de anuncios */}
+              <View className="flex flex-col gap-5">
+                <View className="flex flex-row justify-between items-center">
+                  <Text className="text-2xl text-[#50647D] font-semibold">Ultimos anuncios</Text>
+                  <Pressable className="flex flex-row items-center gap-1">
+                    <Text className="text-[#333333] font-semibold text-base">Ver todos</Text>
+                    <ArrowRight size={18} color="#333333" />
+                  </Pressable>
+                </View>
+                {/* Contenedor del ScrollView limitado */}
+                <View className="flex-grow flex gap-2">
+                  {loading
+                    ? Array.from({ length: 3 }).map((_, index) => (
+                      <AdvertisementHistoryCardSkeleton key={index} />
+                    ))
+                    : Array.from({ length: 3 }).map((_, index) => (
+                      <AdvertisementHistoryCard key={index} status="active" />
+                    ))}
+                </View>
               </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }
