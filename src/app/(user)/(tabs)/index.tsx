@@ -258,7 +258,9 @@ export default function Index() {
           </Pressable>
         </View>
       </View>
-      <View className="flex-grow bg-background">
+      <View
+        className="flex-grow bg-background h-full flex-1"
+      >
         <ScrollView
           className="bg-primary"
           refreshControl={(
