@@ -86,10 +86,15 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const logout = useCallback(() => {
-    setAuthState(null);
     (async () => {
-      await SecureStore.deleteItemAsync("token");
-      await SecureStore.deleteItemAsync("mode");
+      if (Platform.OS === "web") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("mode");
+      } else {
+        await SecureStore.deleteItemAsync("token");
+        await SecureStore.deleteItemAsync("mode");
+      }
+      setAuthState(null);
     })();
   }, []);
 
@@ -116,8 +121,13 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       };
     });
     (async () => {
-      const mode = await SecureStore.getItemAsync("mode");
-      await SecureStore.setItemAsync("mode", mode === "user" && authState?.user?.can_be_chamber ? "chamber" : "user");
+      if (Platform.OS === "web") {
+        const mode = localStorage.getItem("mode") ?? "user";
+        localStorage.setItem("mode", authState?.user?.can_be_chamber && mode === "user" ? "chamber" : mode);
+      } else {
+        const mode = await SecureStore.getItemAsync("mode");
+        await SecureStore.setItemAsync("mode", mode === "user" && authState?.user?.can_be_chamber ? "chamber" : "user");
+      }
     })();
   }, [authState?.user?.can_be_chamber]);
 

@@ -127,7 +127,7 @@ export default function Login() {
               No tienes una cuenta?
               {" "}
               <Link href="/(auth)/sign-up">
-                <Text className="text-blue-500">Regístrate</Text>
+                <Text className="text-primary">Regístrate</Text>
               </Link>
             </Text>
 

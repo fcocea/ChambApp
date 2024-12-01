@@ -79,7 +79,6 @@ export default function AdvertisementSelect() {
             >
               <View className="flex gap-1">
                 <Text className="text-white text-xl font-medium line-clamp-1">{data?.info?.title}</Text>
-                {/* <Text className="text-white text-xs">Edmundo Larenas 219, Concepción</Text> */}
                 <Text className="text-white text-xs">{data?.info?.description}</Text>
                 <Text className="text-white text-xs">{new Date(data?.info?.start_date || "").toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
               </View>
@@ -87,7 +86,7 @@ export default function AdvertisementSelect() {
                 <View className="flex flex-row gap-5">
                   {
                     data?.info.areas.map((area: string, index: number) => (
-                      <View key={index} className="bg-[#3389FD] px-[10px] py-[5px] rounded-md flex justify-center items-center">
+                      <View key={index} className="px-[10px] py-[5px] rounded-md flex justify-center items-center bg-[#496786]">
                         <Text className="text-white text-sm">{area}</Text>
                       </View>
                     ))
