@@ -14,16 +14,23 @@ const screenWidth = Dimensions.get("window").width;
 const AdvertisementCard = () => (
   <Pressable className="flex bg-white rounded-2xl overflow-hidden w-full" style={{ width: (screenWidth - 48) - 4 }}>
     <Image source={{ uri: "https://i.pinimg.com/564x/b7/21/3d/b7213d2e2ca6435c504bfd4294c86288.jpg" }} style={{ width: "100%", height: 180 }} />
-    <View className="absolute right-1 top-2 bg-primary rounded-md px-2 py-1">
-      <Text className="text-white text-xs">
-        Categoria
-      </Text>
+    <View className="flex flex-row justify-between absolute right-1 top-2 gap-2">
+      <View className="bg-[#F8F9FD] rounded-md px-2 py-1">
+        <Text className="text-xs">
+          Categoria
+        </Text>
+      </View>
+      <View className="bg-[#F8F9FD] rounded-md px-2 py-1">
+        <Text className="text-xs">
+          Categoria
+        </Text>
+      </View>
     </View>
     <View className="flex flex-col p-4">
       <View className="flex flex-row justify-between items-center">
         <Text className="font-semibold text-[#333] text-lg">Anuncio 1</Text>
-        <View className="bg-[#F5F5F7] rounded-md px-2 py-1">
-          <Text className="text-sm">En progreso</Text>
+        <View className="bg-primary rounded-md px-2 py-1">
+          <Text className="text-xs text-white">En progreso</Text>
         </View>
       </View>
       <Text className="text-sm text-[#50647D]">{new Date(new Date()).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
