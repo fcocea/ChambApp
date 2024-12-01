@@ -72,7 +72,8 @@ async def get_my_advertisements(
                     ad.ad_id, 
                     ad.title,
                     ad.status, 
-                    ad.price, 
+                    ad.price,
+                    ad.description,
                     ad.start_date,  
                     array_agg(ar.name) AS areas,
                     (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications
