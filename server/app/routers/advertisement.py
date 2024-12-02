@@ -155,6 +155,58 @@ async def accept_advertisement_applications(
         await close_db_connection(connection)
 
 
+@router.post("/{ad_id}/end", response_model=List[dict] | dict)
+@version(1)
+async def end_advertisement(
+    ad_id: UUID,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+
+    connection = await connect_to_db()
+    try:
+        check_rut_created_by_query = """
+            SELECT created_by FROM "Advertisement" WHERE ad_id = $1;
+        """
+        ad_owner = await connection.fetchval(check_rut_created_by_query, ad_id)
+
+        if ad_owner != payload["rut"]:
+            raise HTTPException(
+                status_code=400, detail="User is not the owner of the advertisement"
+            )
+
+        check_already_accepted_query = """
+            SELECT 1
+            FROM "AdvertisementApplication"
+            WHERE ad_id = $1 AND is_accepted = true;
+        """
+        already_accepted = await connection.fetch(check_already_accepted_query, ad_id)
+        if not already_accepted:
+            raise HTTPException(status_code=400, detail="No applications accepted.")
+
+        change_status_query = """
+            UPDATE "Advertisement"
+            SET status = 2
+            WHERE ad_id = $1
+            RETURNING ad_id, status;
+        """
+
+        async with connection.transaction():
+            result = await connection.fetchval(change_status_query, ad_id)
+
+        if not result:
+            raise HTTPException(status_code=400, detail="Advertisement not found.")
+
+        return {
+            "message": "Advertisement ended.",
+        }
+    finally:
+        await close_db_connection(connection)
+
+
 @router.get("/{ad_id}/applications", response_model=List[dict] | dict)
 @version(1)
 async def get_advertisement_applications(ad_id: UUID):
