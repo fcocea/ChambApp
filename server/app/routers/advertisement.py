@@ -179,7 +179,8 @@ async def get_advertisement_applications(ad_id: UUID):
                 ARRAY_AGG(DISTINCT p.name) AS professions,
                 ARRAY_AGG(DISTINCT a.name) AS areas,
                 COALESCE(h_stats.average_score, 0) AS average_score,
-                COALESCE(h_stats.num_evaluations, 0) AS num_evaluations
+                COALESCE(h_stats.num_evaluations, 0) AS num_evaluations,
+                u.rut
             FROM 
                 "AdvertisementApplication" aa
             INNER JOIN 

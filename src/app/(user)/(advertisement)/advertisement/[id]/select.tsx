@@ -21,6 +21,7 @@ interface AvertisementData {
     start_date: string;
   };
   applications: {
+    rut: string;
     first_name: string;
     last_name: string;
     average_score: number;

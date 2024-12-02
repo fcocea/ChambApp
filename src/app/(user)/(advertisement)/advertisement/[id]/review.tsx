@@ -6,12 +6,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { Avatar, Separator } from "@/components/ui";
 import AdvertisementLocation from "@/components/views/user/AdvertisementLocation";
+import { useAuth } from "@/hooks/useAuth";
 import formatMoney from "@/utils/formatMoney";
 
 import { AdvertisementContext } from "../../_layout";
 
+const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL;
+
 export default function AdvertisementReview() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { authState } = useAuth();
   const { advertisementData } = useContext(AdvertisementContext);
   const insets = useSafeAreaInsets();
   const taxService = useMemo(() => (advertisementData.info?.price || 0) * 0.02, [advertisementData]);
@@ -22,12 +26,22 @@ export default function AdvertisementReview() {
   const confirmAdvertisement = useCallback(() => {
     setLoading(true);
     (async () => {
-      await new Promise(resolve => setTimeout(resolve, 4000));
-      console.log("Assing", id, "to", advertisementData?.selected?.rut);
-      setLoading(false);
-      router.replace("/(user)/(tabs)");
+      const response = await fetch(`${API_ENDPOINT}/advertisements/${id}/applications/accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${authState?.token}`
+        },
+        body: JSON.stringify({
+          rut: advertisementData?.selected?.rut
+        })
+      });
+      if (response.ok) {
+        setLoading(false);
+        router.replace("/(user)/(tabs)");
+      }
     })();
-  }, [advertisementData, id, router]);
+  }, [advertisementData, id, router, authState]);
 
   return (
     <View
