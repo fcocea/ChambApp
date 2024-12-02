@@ -74,19 +74,19 @@ async def get_my_advertisements(
                     ad.status, 
                     ad.price,
                     ad.description,
-                    ad.start_date,  
+                    ad.start_date,
                     array_agg(ar.name) AS areas,
                     (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
                     (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
                 FROM 
                     "Advertisement" AS ad 
                 JOIN 
-                    "AdvertisementArea" AS aa 
+                    "AdvertisementArea" AS aa
                 JOIN 
                     "Area" AS ar 
                 ON aa.area_id = ar.area_id 
                 ON ad.ad_id = aa.ad_id 
-                WHERE created_by=$1 AND status='0' OR status='1' 
+                WHERE created_by=$1 AND (status = '0' OR status = '1')
                 GROUP BY ad.ad_id;
             """
             advertisements = await connection.fetch(query, rut)

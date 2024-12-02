@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ const AdvertisementCard = ({ data, handleRefresh }: { data: any; handleRefresh?:
   const insets = useSafeAreaInsets();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { authState } = useAuth();
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -37,10 +38,21 @@ const AdvertisementCard = ({ data, handleRefresh }: { data: any; handleRefresh?:
 
   const handleFinalizeService = async () => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setLoading(false);
-    handleRefresh?.();
-    bottomSheetModalRef.current?.close();
+    const response = await fetch(`${API_ENDPOINT}/advertisements/${data?.ad_id}/end`, {
+      method: "POST",
+      headers: {
+        Authorization: `${authState?.token}`
+      }
+    });
+    if (response.ok) {
+      setLoading(false);
+      handleRefresh?.();
+      bottomSheetModalRef.current?.close();
+    } else {
+      setLoading(false);
+      const data = await response.json();
+      Alert.alert("Error", data?.detail || "Error al finalizar el servicio");
+    }
   };
 
   return (
@@ -165,7 +177,7 @@ const AdvertisementCard = ({ data, handleRefresh }: { data: any; handleRefresh?:
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="w-full py-4 px-3 bg-primary rounded-xl"
+              className="w-full py-4 px-3 bg-primary rounded-xl disabled:opacity-50"
               disabled={loading}
               onPress={handleFinalizeService}
             >
