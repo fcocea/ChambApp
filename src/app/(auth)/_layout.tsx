@@ -15,7 +15,8 @@ export default function RootLayout() {
       headerStyle: {
         backgroundColor: "#FAFAFA"
       },
-      headerShadowVisible: false
+      headerShadowVisible: false,
+      statusBarColor: "#FAFAFA"
     }}
     >
       <Stack.Screen name="index" redirect={authState !== null} />

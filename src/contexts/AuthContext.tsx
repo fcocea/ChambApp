@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import { Platform } from "react-native";
+import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 
 interface User {
@@ -43,7 +44,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   const [authState, setAuthState] = useState<AuthState | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
-
+  const router = useRouter();
   useEffect(() => {
     (async () => {
       let token = null;
@@ -95,8 +96,9 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         await SecureStore.deleteItemAsync("mode");
       }
       setAuthState(null);
+      router.push("/(auth)/");
     })();
-  }, []);
+  }, [router]);
 
   const toggleMode = useCallback(() => {
     setAuthState(prevState => {
