@@ -393,3 +393,113 @@ async def advertisement_create(
         }
     finally:
         await close_db_connection(connection)
+
+
+class ScoreBody(BaseModel):
+    score: int
+
+
+@router.post("/{ad_id}/score", response_model=List[dict] | dict)
+@version(1)
+async def score_advertisement(
+    ad_id: UUID,
+    body: ScoreBody,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+
+    connection = await connect_to_db()
+    try:
+        check_rut_created_or_accepted_query = """
+            SELECT rut_of, rut_ch
+            FROM "History"
+            WHERE ad_id = $1;
+        """
+        result = await connection.fetchrow(check_rut_created_or_accepted_query, ad_id)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Advertisement not found.")
+
+        rut_of, rut_ch = result["rut_of"], result["rut_ch"]
+
+        if rut_of != payload["rut"] and rut_ch != payload["rut"]:
+            raise HTTPException(
+                status_code=400,
+                detail="User is not the owner or the chamber of the advertisement",
+            )
+
+        if body.score < 1 or body.score > 5:
+            raise HTTPException(
+                status_code=400, detail="Score must be between 1 and 5."
+            )
+
+        # Es el dueño del aviso
+        if rut_of == payload["rut"]:
+            check_already_scored_query = """
+                SELECT 1
+                FROM "History"
+                WHERE ad_id = $1 AND rut_of = $2 AND rut_ch = $3 AND score_to_ch IS NOT NULL;
+            """
+            already_scored = await connection.fetch(
+                check_already_scored_query, ad_id, rut_of, rut_ch
+            )
+            if already_scored:
+                raise HTTPException(
+                    status_code=400, detail="Advertisement already scored."
+                )
+
+            score_query = """
+                UPDATE "History"
+                SET score_to_ch = $1
+                WHERE ad_id = $2 AND rut_of = $3 AND rut_ch = $4
+                RETURNING ad_id, score_to_ch;
+            """
+            async with connection.transaction():
+                result = await connection.fetchval(
+                    score_query, body.score, ad_id, rut_of, rut_ch
+                )
+
+            if not result:
+                raise HTTPException(status_code=400, detail="Advertisement not found.")
+
+            return {
+                "message": "Advertisement scored.",
+            }
+        # Es el chamber
+        else:
+            check_already_scored_query = """
+                SELECT 1
+                FROM "History"
+                WHERE ad_id = $1 AND rut_of = $2 AND rut_ch = $3 AND score_to_of IS NOT NULL;
+            """
+            already_scored = await connection.fetch(
+                check_already_scored_query, ad_id, rut_of, rut_ch
+            )
+            if already_scored:
+                raise HTTPException(
+                    status_code=400, detail="Advertisement already scored."
+                )
+
+            score_query = """
+                UPDATE "History"
+                SET score_to_of = $1
+                WHERE ad_id = $2 AND rut_of = $3 AND rut_ch = $4
+                RETURNING ad_id, score_to_of;
+            """
+            async with connection.transaction():
+                result = await connection.fetchval(
+                    score_query, body.score, ad_id, rut_of, rut_ch
+                )
+
+            if not result:
+                raise HTTPException(status_code=400, detail="Advertisement not found.")
+
+            return {
+                "message": "Advertisement scored.",
+            }
+
+    finally:
+        await close_db_connection(connection)
