@@ -64,12 +64,12 @@ export default function AdvertisementSelect() {
     <View className="flex-1 bg-[#FAFAFA] w-full h-full px-6 flex gap-5 pt-6" style={{ paddingBottom: insets.bottom }}>
       { isLoading
         ? (
-            <Skeleton height={150} borderRadius={12} />
+            <Skeleton height={162} borderRadius={12} />
           )
         : (
             <Pressable
               onPress={() => console.log("Ver detalles del anuncio")}
-              className="w-full bg-primary rounded-xl h-[162px] px-6 py-[25px] justify-between shadow-primary"
+              className="w-full bg-primary rounded-xl h-[162px] px-6 py-[25px] justify-between shadow-primary flex gap-2"
               style={{
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.25,
@@ -80,7 +80,7 @@ export default function AdvertisementSelect() {
               <View className="flex gap-1">
                 <Text className="text-white text-xl font-medium line-clamp-1">{data?.info?.title}</Text>
                 {/* <Text className="text-white text-xs">Edmundo Larenas 219, Concepción</Text> */}
-                <Text className="text-white text-sm">{data?.info?.description}</Text>
+                <Text className="text-white text-sm truncate line-clamp-2">{data?.info?.description}</Text>
                 <Text className="text-white text-sm">{new Date(data?.info?.start_date || "").toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
               </View>
               <View className="flex flex-row justify-between items-center">
