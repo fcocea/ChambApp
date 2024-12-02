@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
-import { GiftedChat, IMessage, InputToolbar, Send } from "react-native-gifted-chat";
+import { Bubble, GiftedChat, IMessage, InputToolbar, Send } from "react-native-gifted-chat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
@@ -68,6 +68,17 @@ export default function Chat() {
         }}
         maxComposerHeight={40}
         minComposerHeight={40}
+        renderBubble={props => (
+          <Bubble
+            {...props}
+            wrapperStyle={{
+              right: {
+                backgroundColor: "#1B456D"
+              },
+              ...props.wrapperStyle
+            }}
+          />
+        )}
         renderInputToolbar={props => (
           <InputToolbar
             {...props}

@@ -20,6 +20,10 @@ export const ActiveChatContext = createContext<ActiveChatContextType>({
   setActiveChat: () => {}
 });
 
+export const unstable_settings = {
+  initialRouteName: "index"
+};
+
 export default function MessagesLayout() {
   const [activeChat, setActiveChat] = useState<ActiveChatType>({
     id: "12",

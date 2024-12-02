@@ -101,7 +101,7 @@ const BottomSheetAdvertisement = ({ data, bottomSheetModalRef, handleRefresh }: 
           className="w-full py-4 px-3 bg-white border-borderGray border rounded-xl"
           onPress={() => {
             bottomSheetModalRef.current?.close();
-            router.push(`./(messages)/chat/12`);
+            router.push("/(user)/(tabs)/(messages)/chat/12");
           }}
         >
           <View className="self-center flex flex-row items-center justify-center gap-2">
