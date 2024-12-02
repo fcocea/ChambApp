@@ -23,7 +23,6 @@ class EmailPasswordRequestForm:
 
 class Token(BaseModel):
     access_token: str
-    token_type: str
 
 
 class TokenData(BaseModel):
@@ -79,9 +78,9 @@ async def get_user_from_db(email: str) -> Dict:
         query = """
             SELECT * 
             FROM "User" 
-            WHERE email = $1
+            WHERE LOWER(email) = $1
         """
-        rows = await connection.fetch(query, email)
+        rows = await connection.fetch(query, email.lower())
         return rows
     finally:
         await close_db_connection(connection)
@@ -112,6 +111,6 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"rut": user["rut"]}, expires_delta=access_token_expires
     )
-    token_response = Token(access_token=access_token, token_type="bearer")
+    token_response = Token(access_token=access_token)
 
     return UserWithToken(token=token_response, user=user_dict)
