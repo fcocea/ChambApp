@@ -1,11 +1,11 @@
 import Svg, { Ellipse, G, Path, SvgProps } from "react-native-svg";
 
-export const AdvertisementLocation = (props: SvgProps) => (
+export const AdvertisementLocation = ({ height, ...props }: { height?: number; props?: SvgProps }) => (
   <Svg
     style={{
       width: "100%"
     }}
-    height={162}
+    height={height || 162}
     fill="none"
     {...props}
   >

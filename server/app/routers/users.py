@@ -120,20 +120,22 @@ async def get_my_history(
                     a.title,
                     a.status,
                     a.price,
+                    a.address,
                     a.description,
                     a.start_date,
                     array_agg(ar.name) AS areas,
                     h.end_date,
                     u.first_name AS assigned_to_first_name,
                     u.last_name AS assigned_to_last_name,
-                    h.end_date AS end_date
+                    h.end_date AS end_date,
+                    h.score_to_ch AS score_to_chamber
                 FROM "History" AS h 
                 JOIN "Advertisement" AS a ON h.ad_id = a.ad_id
                 JOIN "AdvertisementArea" AS aa ON a.ad_id = aa.ad_id
                 JOIN "Area" AS ar ON aa.area_id = ar.area_id
                 JOIN "User" AS u ON h.rut_ch = u.rut
                 WHERE h.rut_of=$1
-                GROUP BY a.ad_id, h.end_date, u.first_name, u.last_name
+                GROUP BY a.ad_id, h.end_date, u.first_name, u.last_name, h.score_to_ch
                 ORDER BY h.end_date DESC
                 LIMIT $2 OFFSET $3
             """
