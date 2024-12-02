@@ -1,8 +1,8 @@
-import { useContext, useMemo } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useContext, useMemo, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Feather from "@expo/vector-icons/Feather";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { Avatar, Separator } from "@/components/ui";
 import AdvertisementLocation from "@/components/views/user/AdvertisementLocation";
@@ -16,6 +16,19 @@ export default function AdvertisementReview() {
   const insets = useSafeAreaInsets();
   const taxService = useMemo(() => (advertisementData.info?.price || 0) * 0.02, [advertisementData]);
   const iva = useMemo(() => ((advertisementData.info?.price || 0) + taxService) * 0.19, [advertisementData, taxService]);
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const confirmAdvertisement = useCallback(() => {
+    setLoading(true);
+    (async () => {
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      console.log("Assing", id, "to", advertisementData?.selected?.rut);
+      setLoading(false);
+      router.replace("/(user)/(tabs)");
+    })();
+  }, [advertisementData, id, router]);
+
   return (
     <View
       className="flex flex-1 w-full h-full bg-background px-6 pt-6 gap-6"
@@ -100,8 +113,15 @@ export default function AdvertisementReview() {
           {" "}
           {id}
         </Text>
-        <TouchableOpacity className="w-full py-4 px-3 bg-primary rounded-xl mt-auto mb-4">
-          <Text className="text-white text-center text-base font-medium">Confirmar y chatear</Text>
+        <TouchableOpacity
+          className={`flex w-full py-4 px-3 bg-primary rounded-xl ${loading ? "opacity-50" : ""}`}
+          onPress={() => confirmAdvertisement()}
+          disabled={loading}
+        >
+          <View className="self-center">
+            {loading && <ActivityIndicator color="#ffffff" className="absolute -left-8" />}
+            <Text className="text-white text-center text-base font-medium">Confirmar y chatear</Text>
+          </View>
         </TouchableOpacity>
       </ScrollView>
     </View>

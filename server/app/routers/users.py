@@ -3,7 +3,7 @@ from fastapi_versioning import version
 from app.core.database import connect_to_db, close_db_connection
 from typing import Annotated
 import jwt
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Query
 from app.core.config import SECRET_KEY, ALGORITHM
 
 router = APIRouter(
@@ -76,7 +76,8 @@ async def get_my_advertisements(
                     ad.description,
                     ad.start_date,  
                     array_agg(ar.name) AS areas,
-                    (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications
+                    (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
+                    (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
                 FROM 
                     "Advertisement" AS ad 
                 JOIN 
@@ -90,6 +91,54 @@ async def get_my_advertisements(
             """
             advertisements = await connection.fetch(query, rut)
             return [dict(advertisement) for advertisement in advertisements]
+        finally:
+            await close_db_connection(connection)
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/me/history")
+@version(1)
+async def get_my_history(
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1),
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    try:
+        payload = jwt.decode(
+            Authorization.split(" ")[1], SECRET_KEY, algorithms=[ALGORITHM]
+        )
+        rut = payload["rut"]
+        connection = await connect_to_db()
+        try:
+            query = """
+                SELECT 
+                    a.ad_id,
+                    a.title,
+                    a.status,
+                    a.price,
+                    a.description,
+                    a.start_date,
+                    array_agg(ar.name) AS areas,
+                    h.end_date,
+                    u.first_name AS assigned_to_first_name,
+                    u.last_name AS assigned_to_last_name,
+                    h.end_date AS end_date
+                FROM "History" AS h 
+                JOIN "Advertisement" AS a ON h.ad_id = a.ad_id
+                JOIN "AdvertisementArea" AS aa ON a.ad_id = aa.ad_id
+                JOIN "Area" AS ar ON aa.area_id = ar.area_id
+                JOIN "User" AS u ON h.rut_ch = u.rut
+                WHERE h.rut_of=$1
+                GROUP BY a.ad_id, h.end_date, u.first_name, u.last_name
+                ORDER BY h.end_date DESC
+                LIMIT $2 OFFSET $3
+            """
+            history = await connection.fetch(query, rut, limit, (page - 1) * limit)
+            return [dict(history) for history in history]
         finally:
             await close_db_connection(connection)
     except Exception as e:

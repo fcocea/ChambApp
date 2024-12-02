@@ -25,7 +25,7 @@ export function ChamberCard({ data, setSelectedChamber }: { data?: any; setSelec
   // const { setSelectedChamber } = useAdversitementUser();
   return (
     <Pressable
-      className="flex flex-1 flex-col w-full gap-1 bg-white rounded-2xl px-4 py-4 shadow-md"
+      className="flex flex-1 flex-col w-full gap-1 bg-white rounded-2xl px-4 py-4"
       onPress={() => {
         setSelectedChamber((prev: any) => ({
           ...prev,

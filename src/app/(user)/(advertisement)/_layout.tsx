@@ -23,6 +23,7 @@ type AdvertisementData = {
     average_score: number;
     account_creation_date: string;
     num_evaluations: number;
+    rut: string;
   };
 };
 

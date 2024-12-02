@@ -22,9 +22,9 @@ export const ActiveChatContext = createContext<ActiveChatContextType>({
 
 export default function MessagesLayout() {
   const [activeChat, setActiveChat] = useState<ActiveChatType>({
-    id: null,
-    name: null,
-    photo: null
+    id: "12",
+    name: "Chat de prueba",
+    photo: ""
   });
   const router = useRouter();
   return (

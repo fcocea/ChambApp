@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -18,19 +18,30 @@ const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL;
 
-const AdvertisementCard = ({ data }: { data: any }) => {
+const AdvertisementCard = ({ data, handleRefresh }: { data: any; handleRefresh?: () => void }) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
+
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
 
   if (!data) {
     return null;
   }
+
+  const handleFinalizeService = async () => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setLoading(false);
+    handleRefresh?.();
+    bottomSheetModalRef.current?.close();
+  };
 
   return (
     <>
@@ -110,16 +121,14 @@ const AdvertisementCard = ({ data }: { data: any }) => {
               <View className="flex flex-1">
                 <Text className="text-base font-semibold text-[#333]">Descripción</Text>
                 <Text className="text-sm text-[#50647D] truncate line-clamp-2">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                  {data?.description}
                 </Text>
               </View>
               <View className="flex flex-col items-center gap-1">
                 {/* <Text className="text-base font-semibold text-[#333]">Chamber</Text> */}
-                <Avatar size={36} name="R P" />
+                <Avatar size={36} name={data?.accepted_chamber} />
                 <Text className="text-sm text-[#50647D]">
-                  Rene
-                  {" "}
-                  Puente
+                  {data?.accepted_chamber}
                 </Text>
               </View>
             </View>
@@ -144,19 +153,27 @@ const AdvertisementCard = ({ data }: { data: any }) => {
           <View className="flex flex-col gap-2 mt-auto" style={{ marginBottom: insets.bottom }}>
             <TouchableOpacity
               className="w-full py-4 px-3 bg-white border-borderGray border rounded-xl"
+              onPress={() => {
+                bottomSheetModalRef.current?.close();
+                router.push(`./(messages)/chat/12`);
+              }}
             >
               <View className="self-center flex flex-row items-center justify-center gap-2">
-                <Text className="text-primary text-center text-base font-medium w-fit">Continuar al chat</Text>
                 <Send size={18} color="#1b456d" />
+                <Text className="text-primary text-center text-base font-medium w-fit">Continuar al chat</Text>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity
               className="w-full py-4 px-3 bg-primary rounded-xl"
+              disabled={loading}
+              onPress={handleFinalizeService}
             >
               <View className="self-center flex flex-row items-center justify-center gap-2">
+                {loading
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <CheckCheck size={18} color="#ffffff" />}
                 <Text className="text-white text-center text-base font-medium w-fit">Finalizar servicio</Text>
-                <CheckCheck size={18} color="#ffffff" />
               </View>
             </TouchableOpacity>
           </View>
@@ -166,8 +183,11 @@ const AdvertisementCard = ({ data }: { data: any }) => {
   );
 };
 
-const AdvertisementCardSkeleton = () => (
-  <View className="flex bg-white rounded-2xl overflow-hidden w-full" style={{ width: (screenWidth - 48) - 4 }}>
+const AdvertisementCardSkeleton = ({ hidden = false }: { hidden?: boolean }) => (
+  <View
+    className={`flex bg-white rounded-2xl overflow-hidden ${hidden ? "invisible" : "visible"}`}
+    style={{ width: (screenWidth - 48) - 4 }}
+  >
     <Skeleton height={180} />
     <View className="flex flex-col p-4 gap-2">
       <View className="flex flex-row justify-between items-center">
@@ -178,20 +198,26 @@ const AdvertisementCardSkeleton = () => (
   </View>
 );
 
-const AdvertisementHistoryCard = ({ status }: { status: "active" | "inactive" | "suspend" }) => (
-  <View className="flex flex-row bg-white rounded-xl overflow-hidden w-full px-4 py-2 gap-2 items-center">
-    <View className="w-12 h-12 bg-[#F5F5F7] rounded-md flex items-center justify-center">
-      <Feather name="check" size={20} />
-    </View>
-    <View className="flex flex-row flex-1 justify-between gap-[2px]">
-      <View className="flex flex-col flex-1">
-        <Text className="font-semibold text-[#333] text-lg">Anuncio 1</Text>
-        <Text className="text-sm text-[#50647D]">{new Date(new Date()).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+const AdvertisementHistoryCard = ({ data }: { data: any }) => {
+  const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
+  const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
+  return (
+    <View className="flex flex-row bg-white rounded-xl overflow-hidden w-full px-4 py-2 gap-2 items-center">
+      <View className="w-12 h-12 bg-[#F5F5F7] rounded-md flex items-center justify-center">
+        <Feather name="check" size={20} />
       </View>
-      <Text className="text-sm text-[#50647D]">{new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(32500 || 0)}</Text>
+      <View className="flex flex-row flex-1 justify-between gap-[2px]">
+        <View className="flex flex-col flex-1">
+          <Text className="font-semibold text-[#333] text-lg">{data?.title}</Text>
+          <Text className="text-sm text-[#50647D]">{new Date(data?.end_date).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+        </View>
+        <Text className="text-sm text-[#50647D]">
+          {formatMoney(iva + taxService + (data?.price || 0))}
+        </Text>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const AdvertisementHistoryCardSkeleton = () => (
   <View className="flex flex-row bg-white rounded-xl overflow-hidden w-full px-4 py-2 gap-2 items-center">
@@ -211,34 +237,53 @@ export default function Index() {
   const { authState } = useAuth();
   const router = useRouter();
   const [advertisements, setAdvertisements] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const fetchAdvertisements = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_ENDPOINT}/users/me/advertisements`, {
-        headers: {
-          Authorization: `Bearer ${authState?.token}`
-        }
-      });
+    const response = await fetch(`${API_ENDPOINT}/users/me/advertisements`, {
+      headers: {
+        Authorization: `Bearer ${authState?.token}`
+      }
+    });
+    if (response.ok) {
       const data = await response.json();
-      setAdvertisements(data);
-    } catch (error) {
-      console.error("Error fetching advertisements:", error);
-    } finally {
-      setLoading(false);
+      return data;
     }
+    throw new Error("Error fetching advertisements");
+  };
+
+  const fetchHistory = async () => {
+    const response = await fetch(`${API_ENDPOINT}/users/me/history?page=1&limit=3`, {
+      headers: {
+        Authorization: `Bearer ${authState?.token}`
+      }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    throw new Error("Error fetching history");
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchAdvertisements();
+    setLoading(true);
+    const [advertisements, history] = await Promise.all([fetchAdvertisements(), fetchHistory()]);
+    setAdvertisements(advertisements);
+    setHistory(history);
+    setLoading(false);
     setRefreshing(false);
   };
 
   useEffect(() => {
-    fetchAdvertisements();
+    (async () => {
+      const [advertisements, history] = await Promise.all([fetchAdvertisements(), fetchHistory()]);
+      setAdvertisements(advertisements);
+      setHistory(history);
+      setLoading(false);
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -310,16 +355,23 @@ export default function Index() {
                     ? Array.from({ length: 2 }).map((_, index) => (
                       <AdvertisementCardSkeleton key={index} />
                     ))
-                    : advertisements.map((data, index) => (
-                      <AdvertisementCard key={index} data={data} />
-                    ))}
+                    : advertisements && advertisements?.length > 0
+                      ? advertisements.map((data, index) => (
+                        <AdvertisementCard key={index} data={data} handleRefresh={onRefresh} />
+                      ))
+                      : (
+                          <View>
+                            <AdvertisementCardSkeleton hidden />
+                            <Text className="absolute text-center text-sm text-[#50647D] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">No hay anuncios activos</Text>
+                          </View>
+                        )}
                 </ScrollView>
               </View>
               {/* Historial de anuncios */}
               <View className="flex flex-col gap-5">
                 <View className="flex flex-row justify-between items-center">
                   <Text className="text-2xl text-[#50647D] font-semibold">Ultimos anuncios</Text>
-                  <Pressable className="flex flex-row items-center gap-1">
+                  <Pressable className="flex flex-row items-center gap-1" onPress={() => router.push("/(user)/(tabs)/history")}>
                     <Text className="text-[#333333] font-semibold text-base">Ver todos</Text>
                     <ArrowRight size={18} color="#333333" />
                   </Pressable>
@@ -330,9 +382,11 @@ export default function Index() {
                     ? Array.from({ length: 3 }).map((_, index) => (
                       <AdvertisementHistoryCardSkeleton key={index} />
                     ))
-                    : Array.from({ length: 3 }).map((_, index) => (
-                      <AdvertisementHistoryCard key={index} status="active" />
-                    ))}
+                    : history && history?.length > 0
+                      ? history.map((data, index) => (
+                        <AdvertisementHistoryCard key={index} data={data} />
+                      ))
+                      : <Text className="text-center text-sm text-[#50647D]">No hay anuncios en el historial</Text>}
                 </View>
               </View>
             </View>
