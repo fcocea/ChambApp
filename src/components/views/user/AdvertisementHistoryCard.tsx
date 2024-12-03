@@ -6,6 +6,7 @@ import { Check } from "lucide-react-native";
 import { Skeleton } from "@/components/ui";
 import formatMoney from "@/utils/formatMoney";
 
+import BottomSheetClassificateCard from "./BottomSheetClassificateCard";
 import BottomSheetHistoryCard from "./BottomSheetHistoryCard";
 
 type AdvertisementHistoryCardData = any;
@@ -18,10 +19,16 @@ const AdvertisementHistoryCard = ({ data }: AdvertisementHistoryCardProps) => {
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const classificateBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
+
+  const handlePresentClassificateModalPress = useCallback(() => {
+    classificateBottomSheetModalRef.current?.present();
+  }, []);
+
   return (
     <>
       <Pressable className="flex flex-row bg-white rounded-xl overflow-hidden w-full px-4 py-2 gap-2 items-center" onPress={handlePresentModalPress}>
@@ -39,7 +46,10 @@ const AdvertisementHistoryCard = ({ data }: AdvertisementHistoryCardProps) => {
         </View>
       </Pressable>
       <BottomSheetModal ref={bottomSheetModalRef} index={0} backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" />}>
-        <BottomSheetHistoryCard data={data} bottomSheetModalRef={bottomSheetModalRef} handleRefresh={() => {}} />
+        <BottomSheetHistoryCard data={data} bottomSheetModalRef={bottomSheetModalRef} handleClassificate={handlePresentClassificateModalPress} />
+      </BottomSheetModal>
+      <BottomSheetModal ref={classificateBottomSheetModalRef} index={0} backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={1} pressBehavior="close" />}>
+        <BottomSheetClassificateCard bottomSheetModalRef={classificateBottomSheetModalRef} />
       </BottomSheetModal>
     </>
   );

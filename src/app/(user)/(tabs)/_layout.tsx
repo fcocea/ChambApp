@@ -27,9 +27,9 @@ export default function TabLayout() {
             options={{
               title: "Historial",
               // headerShown: false,
-              headerTintColor: "#FFFF",
+              headerTintColor: "#333",
               headerStyle: {
-                backgroundColor: "#1B456D"
+                backgroundColor: "#FAFAFA"
               },
               tabBarIcon: ({ color, size }) => <FileClock size={size} color={color} />
             }}

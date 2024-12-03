@@ -96,24 +96,12 @@ export default function Login() {
               </TouchableOpacity>
               <Separator text="o" color="#E5E7EB" />
               {Platform.OS === "ios" && (
-                <TouchableOpacity
-                  className="w-full py-4 px-3 bg-[#333333] rounded-xl flex flex-row items-center justify-center gap-2"
-                  onPress={() => {
-                    methods.setValue("mode", "chamber");
-                    methods.handleSubmit(onSubmit)();
-                  }}
-                >
+                <TouchableOpacity className="w-full py-4 px-3 bg-[#333333] rounded-xl flex flex-row items-center justify-center gap-2">
                   <AppleIcon width={24} height={24} />
                   <Text className="text-white text-base font-medium">Acceder con Apple</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
-                className="w-full py-4 px-3 rounded-xl border border-borderGray flex flex-row items-center justify-center gap-2"
-                onPress={() => {
-                  methods.setValue("mode", "chamber");
-                  methods.handleSubmit(onSubmit)();
-                }}
-              >
+              <TouchableOpacity className="w-full py-4 px-3 rounded-xl border border-borderGray flex flex-row items-center justify-center gap-2">
                 <GoogleIcon width={24} height={24} />
                 <Text className="text-[#333333] text-center text-base font-medium">Acceder con Google</Text>
               </TouchableOpacity>

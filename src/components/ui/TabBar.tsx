@@ -21,7 +21,7 @@ export function TabBar({ state, descriptors, navigation }: { state: NavigationSt
         ...activeStyle
       }}
     >
-      <View className="flex-row items-center justify-between bg-white rounded-full gap-8">
+      <View className="flex-row items-center justify-between bg-white rounded-full gap-3">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label

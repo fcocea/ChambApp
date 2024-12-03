@@ -1,5 +1,5 @@
 import { RefObject, useMemo } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
@@ -10,13 +10,13 @@ import formatMoney from "@/utils/formatMoney";
 
 import AdvertisementLocation from "./AdvertisementLocation";
 
-const BottomSheetHistoryCard = ({ data, bottomSheetModalRef }: { data: any; bottomSheetModalRef: RefObject<BottomSheetModal>
-; handleRefresh?: () => void; }) => {
+const BottomSheetHistoryCard = ({ data, bottomSheetModalRef, handleClassificate }: { data: any; bottomSheetModalRef: RefObject<BottomSheetModal>; handleClassificate: () => void }) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
   const isItClassifiable = useMemo(() => !data?.score_to_chamber, [data]); // Do logic to limit the time to classify
+
   return (
     <BottomSheetView className="px-8 py-4 w-full">
       <View>
@@ -117,14 +117,7 @@ const BottomSheetHistoryCard = ({ data, bottomSheetModalRef }: { data: any; bott
           isItClassifiable && (
             <TouchableOpacity
               className="w-full py-4 px-3 bg-primary rounded-xl disabled:opacity-50"
-              onPress={() => {
-                Alert.alert("Calificar servicio", "¿Estás seguro de que deseas calificar este servicio?", [
-                  { text: "Cancelar", style: "cancel" },
-                  { text: "Calificar", onPress: () => {
-                    console.log("Calificar");
-                  } }
-                ]);
-              }}
+              onPress={handleClassificate}
             >
               <View className="self-center flex flex-row items-center justify-center gap-2">
                 <Star size={18} color="#ffffff" />
