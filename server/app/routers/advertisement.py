@@ -26,28 +26,39 @@ async def get_advertisements(
     connection = await connect_to_db()
     try:
         query = """
-            SELECT ad.ad_id,
+            SELECT 
+                ad.ad_id,
                 ad.title,
                 ad.description,
                 ad.price,
                 ad.start_date,
                 ad.address,
                 ad.status,
-                array_agg(ar.name) AS area_names,
+                array_agg(DISTINCT ar.name) AS areas,
                 u.first_name,
                 u.last_name
             FROM "Advertisement" AS ad
-            JOIN "AdvertisementArea" AS aa ON ad.ad_id = aa.ad_id
-            JOIN "User" AS u ON ad.created_by = u.rut
-            JOIN "Area" AS ar ON aa.area_id = ar.area_id
-            WHERE aa.area_id IN (
+            LEFT JOIN "AdvertisementApplication" AS aap ON aap.ad_id = ad.ad_id
+            LEFT JOIN "AdvertisementArea" AS aa ON ad.ad_id = aa.ad_id
+            LEFT JOIN "Area" AS ar ON aa.area_id = ar.area_id
+            LEFT JOIN "User" AS u ON ad.created_by = u.rut
+            WHERE 
+                ad.ad_id NOT IN (
+                    SELECT aap.ad_id
+                    FROM "AdvertisementApplication" AS aap
+                    WHERE aap.rut = $1
+                )
+                AND aa.area_id IN (
                     SELECT cs.area_id
                     FROM "ChamberSpecialize" AS cs
                     WHERE cs.rut = $1
                 )
                 AND ad.created_by != $1
                 AND ad.status = 0
-            GROUP BY ad.ad_id, u.first_name, u.last_name;
+            GROUP BY 
+                ad.ad_id, 
+                u.first_name, 
+                u.last_name;
         """
         advertisements = await connection.fetch(query, rut)
 
@@ -311,6 +322,55 @@ async def advertisement_apply(
         raise HTTPException(
             status_code=400, detail="User has already applied to this advertisement"
         )
+    finally:
+        await close_db_connection(connection)
+
+
+@router.delete("/{ad_id}/cancel-apply", response_model=dict)
+@version(1)
+async def cancel_application(
+    ad_id: UUID,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+    rut = payload["rut"]
+    connection = await connect_to_db()
+    try:
+        query_is_applying = """
+            SELECT 1
+            FROM "AdvertisementApplication"
+            WHERE ad_id = $1
+            AND rut = $2;
+        """
+        applyied = await connection.fetchval(query_is_applying, ad_id, rut)
+        if not applyied:
+            raise HTTPException(
+                status_code=400, detail="User has not applied to this advertisement."
+            )
+
+        query_check_is_started = """
+            SELECT 1
+            FROM "Advertisement"
+            WHERE ad_id = $1
+            AND status NOT IN (0);
+        """
+        started = await connection.fetchval(query_check_is_started, ad_id)
+        if started:
+            raise HTTPException(
+                status_code=400, detail="Advertisement has already started."
+            )
+
+        query = """
+            DELETE FROM "AdvertisementApplication"
+            WHERE ad_id = $1
+            AND rut = $2
+            RETURNING ad_id;
+        """
+        application_id = await connection.fetchval(query, ad_id, rut)
+        return {"message": "Application cancelled", "application_id": application_id}
+
     finally:
         await close_db_connection(connection)
 

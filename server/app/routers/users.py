@@ -97,17 +97,47 @@ async def get_my_advertisements(
                 query = """
                     SELECT 
                         ap.is_accepted,
-                        a.*
+                        a.ad_id,
+                        a.title,
+                        a.status,
+                        a.price,
+                        a.description,
+                        a.start_date,
+                        u.first_name,
+                        u.last_name,
+                        array_agg(area.name) AS areas
                     FROM
                         "AdvertisementApplication" ap
                     LEFT JOIN
                         "Advertisement" a
                     ON 
                         ap.ad_id = a.ad_id
+                    LEFT JOIN
+                        "AdvertisementArea" aa
+                    ON 
+                        aa.ad_id = a.ad_id 
+                    LEFT JOIN
+                        "User" u
+                    ON 
+                        u.rut = a.created_by
+                    LEFT JOIN
+                        "Area" area
+                    ON
+                        aa.area_id = area.area_id
                     WHERE
                         ap.rut = $1 
                         AND a.status IN (0, 1)
-                        AND NOT (ap.is_accepted = false AND a.status = 1);
+                        AND NOT (ap.is_accepted = false AND a.status = 1)
+                    GROUP BY 
+                        ap.is_accepted,
+                        a.ad_id,
+                        a.title,
+                        a.status,
+                        a.price,
+                        a.description,
+                        a.start_date,
+                        u.first_name,
+                        u.last_name;
                 """
                 advertisements = await connection.fetch(query, rut)
                 return [dict(advertisement) for advertisement in advertisements]
