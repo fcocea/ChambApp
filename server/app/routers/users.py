@@ -56,6 +56,7 @@ async def get_me_info(
 @version(1)
 async def get_my_advertisements(
     Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+    chamber: bool = Query(False),
 ):
     if not Authorization:
         raise HTTPException(status_code=400, detail="No access token provided")
@@ -67,32 +68,52 @@ async def get_my_advertisements(
 
         connection = await connect_to_db()
         try:
-            query = """
-                SELECT 
-                    ad.ad_id, 
-                    ad.title,
-                    ad.status, 
-                    ad.price,
-                    ad.description,
-                    ad.start_date,
-                    array_agg(ar.name) AS areas,
-                    (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
-                    (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
-                FROM 
-                    "Advertisement" AS ad 
-                JOIN 
-                    "AdvertisementArea" AS aa
-                JOIN 
-                    "Area" AS ar 
-                ON aa.area_id = ar.area_id 
-                ON ad.ad_id = aa.ad_id 
-                WHERE created_by=$1 AND (status = '0' OR status = '1')
-                GROUP BY ad.ad_id;
-            """
-            advertisements = await connection.fetch(query, rut)
-            return [dict(advertisement) for advertisement in advertisements]
+            if not chamber:
+                query = """
+                    SELECT 
+                        ad.ad_id, 
+                        ad.title,
+                        ad.status, 
+                        ad.price,
+                        ad.description,
+                        ad.start_date,
+                        array_agg(ar.name) AS areas,
+                        (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
+                        (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
+                    FROM 
+                        "Advertisement" AS ad 
+                    JOIN 
+                        "AdvertisementArea" AS aa
+                    JOIN 
+                        "Area" AS ar 
+                    ON aa.area_id = ar.area_id 
+                    ON ad.ad_id = aa.ad_id 
+                    WHERE created_by=$1 AND (status = '0' OR status = '1')
+                    GROUP BY ad.ad_id;
+                """
+                advertisements = await connection.fetch(query, rut)
+                return [dict(advertisement) for advertisement in advertisements]
+            else:
+                query = """
+                    SELECT 
+                        ap.is_accepted,
+                        a.*
+                    FROM
+                        "AdvertisementApplication" ap
+                    LEFT JOIN
+                        "Advertisement" a
+                    ON 
+                        ap.ad_id = a.ad_id
+                    WHERE
+                        ap.rut = $1 
+                        AND a.status IN (0, 1)
+                        AND NOT (ap.is_accepted = false AND a.status = 1);
+                """
+                advertisements = await connection.fetch(query, rut)
+                return [dict(advertisement) for advertisement in advertisements]
         finally:
             await close_db_connection(connection)
+
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
