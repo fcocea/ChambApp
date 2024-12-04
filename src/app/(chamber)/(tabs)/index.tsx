@@ -73,7 +73,7 @@ const AdvertisementCardSkeleton = () => (
   </View>
 );
 
-const AdvertisementHistoryCard = ({ title, date, price }: {
+const AdvertisementSuggestionCard = ({ title, date, price }: {
   title: string;
   date: string;
   price: number;
@@ -96,7 +96,7 @@ const AdvertisementHistoryCard = ({ title, date, price }: {
   </View>
 );
 
-const AdvertisementHistoryCardSkeleton = () => (
+const AdvertisementSuggestionCardSkeleton = () => (
   <View className="flex flex-row bg-white rounded-xl overflow-hidden w-full px-4 py-2 gap-2 items-center">
     <Skeleton width={42} height={42} />
     <View className="flex flex-row flex-1 justify-between gap-[2px]">
@@ -245,12 +245,12 @@ export default function Index() {
               <View className="flex-grow flex gap-2">
                 {loading
                   ? Array.from({ length: 3 }).map((_, index) => (
-                    <AdvertisementHistoryCardSkeleton key={index} />
+                    <AdvertisementSuggestionCardSkeleton key={index} />
                   ))
                   : advertisementsForMe
                     .filter(ad => ad.title && ad.price) // Filtra solo anuncios con datos válidos
                     .map(ad => (
-                      <AdvertisementHistoryCard
+                      <AdvertisementSuggestionCard
                         key={ad.ad_id}
                         title={ad.title}
                         date={new Date(ad.start_date).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
