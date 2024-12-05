@@ -22,6 +22,60 @@ async def get_users():
         await close_db_connection(connection)
 
 
+@router.post("/{rut}/inactive")
+@version(1)
+async def inactive_user(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_existence_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = user[0]
+        if not user["is_active"]:
+            raise HTTPException(status_code=400, detail="User is already inactive")
+
+        query = """
+            UPDATE "User"
+            SET is_active = FALSE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "User inactivated successfully"}
+    finally:
+        await close_db_connection(connection)
+
+
+@router.post("/{rut}/active")
+@version(1)
+async def active_user(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_existence_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = user[0]
+        if user["is_active"]:
+            raise HTTPException(status_code=400, detail="User is already active")
+
+        query = """
+            UPDATE "User"
+            SET is_active = TRUE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "User activated successfully"}
+    finally:
+        await close_db_connection(connection)
+
+
 @router.get("/me")
 @version(1)
 async def get_me_info(
@@ -197,3 +251,30 @@ async def get_my_history(
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.post("/{rut}/accept-chamber")
+@version(1)
+async def accept_request(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user[0]["can_be_chamber"]:
+            raise HTTPException(status_code=400, detail="User is already a chamber")
+
+        query = """
+            UPDATE "User"
+            SET can_be_chamber = TRUE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "Request accepted successfully"}
+
+    finally:
+        await close_db_connection(connection)
