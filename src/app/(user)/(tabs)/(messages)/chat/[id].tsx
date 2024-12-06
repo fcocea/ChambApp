@@ -4,17 +4,53 @@ import { Bubble, GiftedChat, IMessage, InputToolbar, Send } from "react-native-g
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
+import { Redirect } from "expo-router";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useChat } from "@/hooks/useChat";
+
+const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL.replace("/v1", "");
 
 export default function Chat() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { authState } = useAuth();
-
-  const socket = useMemo(() => new WebSocket(`${process.env.EXPO_PUBLIC_API_URL.replace("/v1", "")}/messages/${id}`), [id]);
+  const socket = useMemo(() => new WebSocket(`${process.env.EXPO_PUBLIC_API_URL.replace("/v1", "")}/chat/${id}?token=${authState?.token}`), [id, authState?.token]);
+  const { activeMessages, addMessage } = useChat();
 
   const [messages, setMessages] = useState<IMessage[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      if (activeMessages) {
+        setMessages(previousMessages =>
+          GiftedChat.append(previousMessages, activeMessages)
+        );
+        return;
+      }
+      const response = await fetch(`${API_ENDPOINT}/chat/${id}/messages`, {
+        headers: {
+          access_token: `Bearer ${authState?.token}`
+        }
+      });
+      const data = await response.json();
+      const messages = data.map((message: any) => ({
+        _id: message.id,
+        text: message.message,
+        createdAt: new Date(message.created_at),
+        user: {
+          _id: message.sender_rut
+        }
+      }));
+      setMessages(previousMessages =>
+        GiftedChat.append(previousMessages, messages)
+      );
+      for (const message of messages) {
+        addMessage(message);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     socket.onmessage = event => {
@@ -29,16 +65,26 @@ export default function Chat() {
           }
         }])
       );
+      addMessage({
+        _id: message_id,
+        text: message,
+        createdAt: new Date(date),
+        user: { _id: user_id }
+      });
     };
     return () => {
       socket.close();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, id]);
 
   const onSend = useCallback((messages: IMessage[]) => {
     setMessages(previousMessages =>
       GiftedChat.append(previousMessages, messages)
     );
+    for (const message of messages) {
+      addMessage(message);
+    }
     socket.send(JSON.stringify({
       message: messages[0].text,
       message_id: messages[0]._id,
@@ -46,7 +92,14 @@ export default function Chat() {
       date: new Date(),
       chat_id: id
     }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState?.user?.rut, socket, id]);
+
+  const sortedMessages = useMemo(() => messages.sort((a: IMessage, b: IMessage) => (b.createdAt as Date).getTime() - (a.createdAt as Date).getTime()), [messages]);
+
+  if (!id) {
+    return <Redirect href="/(messages)" />;
+  }
 
   return (
     <View
@@ -56,12 +109,13 @@ export default function Chat() {
       }}
     >
       <GiftedChat
-        messages={messages}
+        messages={sortedMessages}
         onSend={messages => onSend(messages)}
         user={{ _id: authState?.user?.rut || -1 }}
         renderAvatar={null}
         renderUsernameOnMessage={false}
         placeholder="Mensaje"
+        isLoadingEarlier={true}
         alwaysShowSend
         textInputProps={{
           className: "bg-[#F3F6F6] rounded-full px-4 w-full flex items-center mr-6 justify-center"

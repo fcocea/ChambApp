@@ -1,11 +1,24 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { useRouter } from "expo-router";
 
 import { Avatar, Skeleton } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
+import { useChat } from "@/hooks/useChat";
+import convertHour from "@/utils/convertHour";
+import TimeAgo from "@/utils/timeAgo";
 
-import { ActiveChatContext } from "./_layout";
+const API_URL = process.env.EXPO_PUBLIC_API_URL.replace("/v1", "");
+
+interface IChat {
+  chat_id: string;
+  chamber_name: string;
+  created_by_name: string;
+  you_are_chamber: boolean;
+  last_message: string;
+  you_sent: boolean;
+  last_message_date: string;
+}
 
 function RecentChatSkeleton() {
   return (
@@ -24,43 +37,36 @@ function RecentChatSkeleton() {
   );
 }
 
-const dummyData = [
-  {
-    id: "12",
-    name: "Chat de prueba",
-    photo: ""
-  }
-];
-
-function RecentChat({ data }: { data: { id: string; name: string; photo: string } }) {
-  const router = useRouter();
-  const { setActiveChat } = useContext(ActiveChatContext);
+function RecentChat({ data }: { data: IChat }) {
+  const { goToChat, getMessages } = useChat();
+  const lastMessage = getMessages(data.chat_id)?.[0];
+  const { authState } = useAuth();
   return (
     <Pressable
       className="flex flex-row justify-between"
       onPress={() => {
-        setActiveChat({
-          id: "12",
-          name: data.name,
+        goToChat({
+          id: data.chat_id,
+          name: data.you_are_chamber ? data.created_by_name : data.chamber_name,
           photo: ""
         });
-        router.push(`./(messages)/chat/${data.id}`);
       }}
     >
       <View className="flex-1 flex flex-row gap-3 items-center">
-        <Avatar size={48} name={data.name} />
+        <Avatar size={48} name={data.you_are_chamber ? data.created_by_name : data.chamber_name} />
         <View className="flex justify-between py-1">
           <Text className="text-lg font-semibold">
-            {data.name}
+            {data.you_are_chamber ? data.created_by_name : data.chamber_name}
           </Text>
           <Text className="text-base font-light">
-            Tú: Hola, ¿cómo estás?
+            {data.you_sent || lastMessage?.user._id === authState?.user?.rut ? "Tú: " : ""}
+            {lastMessage?.text || data.last_message}
           </Text>
         </View>
       </View>
       <View className="flex justify-between py-1">
         <Text className="text-base font-light">
-          1 min
+          {data?.last_message_date && <TimeAgo date={convertHour(new Date(lastMessage?.createdAt || data.last_message_date))} />}
         </Text>
       </View>
     </Pressable>
@@ -68,10 +74,20 @@ function RecentChat({ data }: { data: { id: string; name: string; photo: string 
 }
 export default function Messages() {
   const [loading, setLoading] = useState<boolean>(true);
+  const { authState } = useAuth();
+  const [data, setData] = useState<IChat[]>([]);
   useEffect(() => {
-    setTimeout(() => {
+    (async () => {
+      const response = await fetch(`${API_URL}/chat`, {
+        headers: {
+          access_token: `Bearer ${authState?.token}`
+        }
+      });
+      const data = await response.json();
+      setData(data);
       setLoading(false);
-    }, 1000);
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <KeyboardAvoidingView
@@ -90,7 +106,7 @@ export default function Messages() {
               ? Array.from({ length: 8 }).map((_, index) => (
                 <RecentChatSkeleton key={index} />
               ))
-              : dummyData.map((data, index) => (
+              : data.map((data, index) => (
                 <RecentChat key={index} data={data} />
               ))}
           </ScrollView>

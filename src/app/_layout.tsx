@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { Slot, SplashScreen, useRouter, useSegments } from "expo-router";
 import * as SystemUI from "expo-system-ui";
+import TimeAgo from "javascript-time-ago";
+import es from "javascript-time-ago/locale/es";
 
-import AuthProvider from "../contexts/AuthContext";
-import { useAuth } from "../hooks/useAuth";
+import AuthProvider from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 import "@/global.css";
+
+TimeAgo.addDefaultLocale(es);
 
 SplashScreen.preventAutoHideAsync();
 SystemUI.setBackgroundColorAsync("#FAFAFA");

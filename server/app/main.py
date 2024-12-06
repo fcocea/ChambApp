@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_versioning import VersionedFastAPI
-from app.routers import users, advertisement, login, messages, areas
+from app.routers import users, advertisement, login, areas, chat
 
 app = FastAPI()
 
@@ -22,5 +22,5 @@ app = VersionedFastAPI(
     app, version="1.0", prefix_format="/v{major}", enable_latest=False
 )
 
-app.include_router(messages.router)
+app.include_router(chat.router)
 app.add_middleware(CORSMiddleware, allow_origins=origins)

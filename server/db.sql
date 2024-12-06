@@ -217,3 +217,48 @@ UPDATE
   OF status ON "Advertisement" FOR EACH ROW
 EXECUTE
   FUNCTION insert_history_on_status_change ();
+
+CREATE TABLE "Chat" (
+    "id" UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "advertisement_id" UUID NOT NULL UNIQUE REFERENCES "Advertisement"("ad_id")
+);
+
+CREATE FUNCTION check_advertisement_status() RETURNS TRIGGER AS $$
+BEGIN
+    IF (
+        SELECT "status"
+        FROM "Advertisement"
+        WHERE "ad_id" = NEW."advertisement_id"
+    ) = 0 THEN
+        RAISE EXCEPTION 'No se puede crear un chat si el estado del anuncio es 0.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_advertisement_status_trigger
+BEFORE INSERT ON "Chat"
+FOR EACH ROW
+EXECUTE PROCEDURE check_advertisement_status();
+
+CREATE TABLE "ChatMessage" (
+    "id" SERIAL PRIMARY KEY,
+    "chat_id" UUID NOT NULL REFERENCES "Chat"("id"),
+    "sender_rut" VARCHAR(9) NOT NULL REFERENCES "User"("rut"),
+    "message" TEXT NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE FUNCTION update_chat_updated_at() RETURNS TRIGGER AS $$
+BEGIN
+    NEW."updated_at" = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_chat_updated_at_trigger
+AFTER UPDATE ON "Chat"
+FOR EACH ROW
+EXECUTE PROCEDURE update_chat_updated_at();
