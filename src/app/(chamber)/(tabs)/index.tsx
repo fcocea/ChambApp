@@ -14,21 +14,27 @@ const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL;
 
 export default function Index() {
   const insets = useSafeAreaInsets();
-  const { authState, logout } = useAuth();
+  const { authState } = useAuth();
   const [advertisements, setAdvertisements] = useState<any[]>([]);
   const [advertisementsForMe, setAdvertisementsForMe] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const fetchAdvertisements = async () => {
-    const response = await fetch(`${API_ENDPOINT}/users/me/advertisements`, {
+    const response = await fetch(`${API_ENDPOINT}/users/me/advertisements?chamber=true`, {
       headers: {
         Authorization: `Bearer ${authState?.token}`
       }
     });
     const data = await response.json();
     if (response.ok) {
-      return data;
+      const sortedData = data.sort((a: any, b: any) => {
+        if (a.status !== b.status) {
+          return b.status - a.status;
+        }
+        return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+      });
+      return sortedData;
     }
     throw new Error(data?.detail || "Error al obtener los anuncios");
   };
@@ -78,7 +84,6 @@ export default function Index() {
           </View>
           <Pressable
             className="flex flex-row items-center rounded-full border-[#FAFAFA] border-[1px] p-2"
-            onPress={logout}
           >
             <Bell size={18} color="white" />
             <View className="bg-red-500 rounded-full w-2 h-2 absolute top-1 right-[9px]" />
@@ -129,9 +134,16 @@ export default function Index() {
                   ? Array.from({ length: 2 }).map((_, index) => (
                     <AdvertisementCardSkeleton key={index} />
                   ))
-                  : advertisements.map((data, index) => (
-                    <AdvertisementCard key={index} data={data} />
-                  ))}
+                  : advertisements && advertisements?.length > 0
+                    ? advertisements.map((data, index) => (
+                      <AdvertisementCard key={index} data={data} handleRefresh={onRefresh} />
+                    ))
+                    : (
+                        <View>
+                          <AdvertisementCardSkeleton hidden />
+                          <Text className="absolute text-center text-sm text-[#50647D] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">No hay anuncios activos</Text>
+                        </View>
+                      )}
               </ScrollView>
             </View>
             <View className="flex flex-col gap-5">
@@ -147,16 +159,14 @@ export default function Index() {
                   ? Array.from({ length: 3 }).map((_, index) => (
                     <AdvertisementSuggestionCardSkeleton key={index} />
                   ))
-                  : advertisementsForMe
-                    .filter(ad => ad.title && ad.price)
-                    .map(ad => (
-                      <AdvertisementSuggestionCard
-                        key={ad.ad_id}
-                        title={ad.title}
-                        date={new Date(ad.start_date).toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        price={ad.price}
-                      />
-                    ))}
+                  : advertisementsForMe.length > 0
+                    ? advertisementsForMe
+                      .map((ad, index) => (
+                        <AdvertisementSuggestionCard key={index} data={ad} handleRefresh={onRefresh} />
+                      ))
+                    : (
+                        <Text className="text-center text-sm text-[#50647D]">No hay trabajos sugeridos</Text>
+                      )}
               </View>
             </View>
           </View>

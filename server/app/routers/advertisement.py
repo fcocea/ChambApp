@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Query
 from fastapi_versioning import version
 from typing import List, Annotated
 from uuid import UUID
@@ -18,43 +18,64 @@ router = APIRouter(
 @version(1)
 async def get_advertisements(
     Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+    admin: bool = Query(False),
 ):
-    if not Authorization:
-        raise HTTPException(status_code=400, detail="No access token provided")
-    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
-    rut = payload["rut"]
     connection = await connect_to_db()
-    try:
-        query = """
-            SELECT ad.ad_id,
-                ad.title,
-                ad.description,
-                ad.price,
-                ad.start_date,
-                ad.address,
-                ad.status,
-                array_agg(ar.name) AS area_names,
-                u.first_name,
-                u.last_name
-            FROM "Advertisement" AS ad
-            JOIN "AdvertisementArea" AS aa ON ad.ad_id = aa.ad_id
-            JOIN "User" AS u ON ad.created_by = u.rut
-            JOIN "Area" AS ar ON aa.area_id = ar.area_id
-            WHERE aa.area_id IN (
-                    SELECT cs.area_id
-                    FROM "ChamberSpecialize" AS cs
-                    WHERE cs.rut = $1
-                )
-                AND ad.created_by != $1
-                AND ad.status = 0
-            GROUP BY ad.ad_id, u.first_name, u.last_name;
-        """
-        advertisements = await connection.fetch(query, rut)
+    if admin:
+        try:
+            advertisements = await connection.fetch('SELECT * FROM "Advertisement";')
+            return [dict(advertisement) for advertisement in advertisements]
+        finally:
+            await close_db_connection(connection)
+    else:
+        if not Authorization:
+            raise HTTPException(status_code=400, detail="No access token provided")
 
-        return [dict(advertisement) for advertisement in advertisements]
+        payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+        rut = payload["rut"]
 
-    finally:
-        await close_db_connection(connection)
+        try:
+            query = """
+                SELECT 
+                    ad.ad_id,
+                    ad.title,
+                    ad.description,
+                    ad.price,
+                    ad.start_date,
+                    ad.address,
+                    ad.status,
+                    array_agg(DISTINCT ar.name) AS areas,
+                    u.first_name,
+                    u.last_name
+                FROM "Advertisement" AS ad
+                LEFT JOIN "AdvertisementApplication" AS aap ON aap.ad_id = ad.ad_id
+                LEFT JOIN "AdvertisementArea" AS aa ON ad.ad_id = aa.ad_id
+                LEFT JOIN "Area" AS ar ON aa.area_id = ar.area_id
+                LEFT JOIN "User" AS u ON ad.created_by = u.rut
+                WHERE 
+                    ad.ad_id NOT IN (
+                        SELECT aap.ad_id
+                        FROM "AdvertisementApplication" AS aap
+                        WHERE aap.rut = $1
+                    )
+                    AND aa.area_id IN (
+                        SELECT cs.area_id
+                        FROM "ChamberSpecialize" AS cs
+                        WHERE cs.rut = $1
+                    )
+                    AND ad.created_by != $1
+                    AND ad.status = 0
+                GROUP BY 
+                    ad.ad_id, 
+                    u.first_name, 
+                    u.last_name;
+            """
+            advertisements = await connection.fetch(query, rut)
+
+            return [dict(advertisement) for advertisement in advertisements]
+
+        finally:
+            await close_db_connection(connection)
 
 
 @router.get("/{ad_id}", response_model=dict)
@@ -315,6 +336,55 @@ async def advertisement_apply(
         await close_db_connection(connection)
 
 
+@router.delete("/{ad_id}/cancel-apply", response_model=dict)
+@version(1)
+async def cancel_application(
+    ad_id: UUID,
+    Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+):
+    if not Authorization:
+        raise HTTPException(status_code=400, detail="No access token provided")
+    payload = jwt.decode(Authorization, SECRET_KEY, algorithms=[ALGORITHM])
+    rut = payload["rut"]
+    connection = await connect_to_db()
+    try:
+        query_is_applying = """
+            SELECT 1
+            FROM "AdvertisementApplication"
+            WHERE ad_id = $1
+            AND rut = $2;
+        """
+        applyied = await connection.fetchval(query_is_applying, ad_id, rut)
+        if not applyied:
+            raise HTTPException(
+                status_code=400, detail="User has not applied to this advertisement."
+            )
+
+        query_check_is_started = """
+            SELECT 1
+            FROM "Advertisement"
+            WHERE ad_id = $1
+            AND status NOT IN (0);
+        """
+        started = await connection.fetchval(query_check_is_started, ad_id)
+        if started:
+            raise HTTPException(
+                status_code=400, detail="Advertisement has already started."
+            )
+
+        query = """
+            DELETE FROM "AdvertisementApplication"
+            WHERE ad_id = $1
+            AND rut = $2
+            RETURNING ad_id;
+        """
+        application_id = await connection.fetchval(query, ad_id, rut)
+        return {"message": "Application cancelled", "application_id": application_id}
+
+    finally:
+        await close_db_connection(connection)
+
+
 class AdvertisementCreate(BaseModel):
     title: str
     description: str
@@ -501,5 +571,67 @@ async def score_advertisement(
                 "message": "Advertisement scored.",
             }
 
+    finally:
+        await close_db_connection(connection)
+
+
+@router.post("/{ad_id}/inactive", response_model=dict)
+@version(1)
+async def inactive_advertisement(ad_id: UUID):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "Advertisement" WHERE ad_id=$1
+        """
+        advertisement = await connection.fetch(check_existence_query, ad_id)
+        if not advertisement:
+            raise HTTPException(status_code=404, detail="Advertisement not found")
+
+        advertisement = advertisement[0]
+        if advertisement["status"] == 4:
+            raise HTTPException(
+                status_code=400, detail="Advertisement is already inactive"
+            )
+        elif advertisement["status"] != 0:
+            raise HTTPException(
+                status_code=400, detail="Advertisement is already started"
+            )
+
+        query = """
+            UPDATE "Advertisement"
+            SET status = 4
+            WHERE ad_id=$1
+        """
+        await connection.execute(query, ad_id)
+        return {"message": "Advertisement inactivated successfully"}
+    finally:
+        await close_db_connection(connection)
+
+
+@router.post("/{ad_id}/active", response_model=dict)
+@version(1)
+async def active_advertisement(ad_id: UUID):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "Advertisement" WHERE ad_id=$1
+        """
+        advertisement = await connection.fetch(check_existence_query, ad_id)
+        if not advertisement:
+            raise HTTPException(status_code=404, detail="Advertisement not found")
+
+        advertisement = advertisement[0]
+        if advertisement["status"] != 4:
+            raise HTTPException(
+                status_code=400, detail="Advertisement is already active"
+            )
+
+        query = """
+            UPDATE "Advertisement"
+            SET status = 0
+            WHERE ad_id=$1
+        """
+        await connection.execute(query, ad_id)
+        return {"message": "Advertisement activated successfully"}
     finally:
         await close_db_connection(connection)

@@ -22,6 +22,60 @@ async def get_users():
         await close_db_connection(connection)
 
 
+@router.post("/{rut}/inactive")
+@version(1)
+async def inactive_user(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_existence_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = user[0]
+        if not user["is_active"]:
+            raise HTTPException(status_code=400, detail="User is already inactive")
+
+        query = """
+            UPDATE "User"
+            SET is_active = FALSE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "User inactivated successfully"}
+    finally:
+        await close_db_connection(connection)
+
+
+@router.post("/{rut}/active")
+@version(1)
+async def active_user(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_existence_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_existence_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = user[0]
+        if user["is_active"]:
+            raise HTTPException(status_code=400, detail="User is already active")
+
+        query = """
+            UPDATE "User"
+            SET is_active = TRUE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "User activated successfully"}
+    finally:
+        await close_db_connection(connection)
+
+
 @router.get("/me")
 @version(1)
 async def get_me_info(
@@ -56,6 +110,7 @@ async def get_me_info(
 @version(1)
 async def get_my_advertisements(
     Authorization: Annotated[str | None, Header(convert_underscores=False)] = None,
+    chamber: bool = Query(False),
 ):
     if not Authorization:
         raise HTTPException(status_code=400, detail="No access token provided")
@@ -67,32 +122,82 @@ async def get_my_advertisements(
 
         connection = await connect_to_db()
         try:
-            query = """
-                SELECT 
-                    ad.ad_id, 
-                    ad.title,
-                    ad.status, 
-                    ad.price,
-                    ad.description,
-                    ad.start_date,
-                    array_agg(ar.name) AS areas,
-                    (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
-                    (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
-                FROM 
-                    "Advertisement" AS ad 
-                JOIN 
-                    "AdvertisementArea" AS aa
-                JOIN 
-                    "Area" AS ar 
-                ON aa.area_id = ar.area_id 
-                ON ad.ad_id = aa.ad_id 
-                WHERE created_by=$1 AND (status = '0' OR status = '1')
-                GROUP BY ad.ad_id;
-            """
-            advertisements = await connection.fetch(query, rut)
-            return [dict(advertisement) for advertisement in advertisements]
+            if not chamber:
+                query = """
+                    SELECT 
+                        ad.ad_id, 
+                        ad.title,
+                        ad.status, 
+                        ad.price,
+                        ad.description,
+                        ad.start_date,
+                        array_agg(ar.name) AS areas,
+                        (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
+                        (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
+                    FROM 
+                        "Advertisement" AS ad 
+                    JOIN 
+                        "AdvertisementArea" AS aa
+                    JOIN 
+                        "Area" AS ar 
+                    ON aa.area_id = ar.area_id 
+                    ON ad.ad_id = aa.ad_id 
+                    WHERE created_by=$1 AND (status = '0' OR status = '1')
+                    GROUP BY ad.ad_id;
+                """
+                advertisements = await connection.fetch(query, rut)
+                return [dict(advertisement) for advertisement in advertisements]
+            else:
+                query = """
+                    SELECT 
+                        ap.is_accepted,
+                        a.ad_id,
+                        a.title,
+                        a.status,
+                        a.price,
+                        a.description,
+                        a.start_date,
+                        u.first_name,
+                        u.last_name,
+                        array_agg(area.name) AS areas
+                    FROM
+                        "AdvertisementApplication" ap
+                    LEFT JOIN
+                        "Advertisement" a
+                    ON 
+                        ap.ad_id = a.ad_id
+                    LEFT JOIN
+                        "AdvertisementArea" aa
+                    ON 
+                        aa.ad_id = a.ad_id 
+                    LEFT JOIN
+                        "User" u
+                    ON 
+                        u.rut = a.created_by
+                    LEFT JOIN
+                        "Area" area
+                    ON
+                        aa.area_id = area.area_id
+                    WHERE
+                        ap.rut = $1 
+                        AND a.status IN (0, 1)
+                        AND NOT (ap.is_accepted = false AND a.status = 1)
+                    GROUP BY 
+                        ap.is_accepted,
+                        a.ad_id,
+                        a.title,
+                        a.status,
+                        a.price,
+                        a.description,
+                        a.start_date,
+                        u.first_name,
+                        u.last_name;
+                """
+                advertisements = await connection.fetch(query, rut)
+                return [dict(advertisement) for advertisement in advertisements]
         finally:
             await close_db_connection(connection)
+
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -146,3 +251,30 @@ async def get_my_history(
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.post("/{rut}/accept-chamber")
+@version(1)
+async def accept_request(rut: str):
+    connection = await connect_to_db()
+    try:
+        check_query = """
+            SELECT * FROM "User" WHERE rut=$1
+        """
+        user = await connection.fetch(check_query, rut)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user[0]["can_be_chamber"]:
+            raise HTTPException(status_code=400, detail="User is already a chamber")
+
+        query = """
+            UPDATE "User"
+            SET can_be_chamber = TRUE
+            WHERE rut=$1
+        """
+        await connection.execute(query, rut)
+        return {"message": "Request accepted successfully"}
+
+    finally:
+        await close_db_connection(connection)
