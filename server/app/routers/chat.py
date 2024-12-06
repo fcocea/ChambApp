@@ -7,12 +7,26 @@ import asyncpg
 import json
 from typing import Annotated
 from fastapi import Header
+import asyncio
+
 
 router = APIRouter(
     prefix="/chat",
 )
 
 active_connections: Dict[str, List[WebSocket]] = {}
+
+global_connections: Dict[str, List[WebSocket]] = {}
+
+
+async def store_message(chat_id: str, message: str, sender_rut: str):
+    query = """
+        INSERT INTO "ChatMessage" (chat_id, sender_rut, message)
+        VALUES ($1, $2, $3)
+    """
+    connection = await connect_to_db()
+    await connection.execute(query, chat_id, sender_rut, message)
+    await close_db_connection(connection)
 
 
 @router.websocket("/{chat_id}")
@@ -65,13 +79,7 @@ async def chat_ws(websocket: WebSocket, chat_id: str, token: str):
             if "message" in parsed_data:
                 message = parsed_data["message"]
                 user_id = parsed_data["user_id"]
-                query = """
-                    INSERT INTO "ChatMessage" (chat_id, sender_rut, message)
-                    VALUES ($1, $2, $3)
-                """
-                connection = await connect_to_db()
-                await connection.execute(query, chat_id, user_id, message)
-                await close_db_connection(connection)
+                asyncio.ensure_future(store_message(chat_id, message, user_id))
                 for connection in active_connections[chat_id]:
                     if connection != websocket:
                         await connection.send_text(f"{data}")
@@ -84,6 +92,39 @@ async def chat_ws(websocket: WebSocket, chat_id: str, token: str):
         active_connections[chat_id].remove(websocket)
         if not active_connections[chat_id]:
             del active_connections[chat_id]
+
+
+async def listen_new_chats():
+    connection = await connect_to_db()
+    await connection.add_listener("new_channel", listen_new_chats)
+    while True:
+        await asyncio.sleep(1)
+
+
+async def notify_new_chat(connection, pid, channel, payload):
+    print("connection", connection)
+    print("pid", pid)
+    print("channel", channel)
+    print("payload", payload)
+
+
+@router.websocket("/connect")
+async def connect_ws(websocket: WebSocket, token: str):
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    rut = payload["rut"]
+    await websocket.accept()
+    if rut not in global_connections:
+        global_connections[rut] = []
+    global_connections[rut].append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        pass
+    finally:
+        global_connections[rut].remove(websocket)
 
 
 @router.get("/")
@@ -115,7 +156,7 @@ async def get_chats(
             ON app.rut = u_chamber.rut
         LEFT JOIN "User" u_created_by
             ON a.created_by = u_created_by.rut
-        WHERE (app.rut = $1 OR a.created_by = $1) AND app.is_accepted = TRUE
+        WHERE ((app.rut = $1 OR a.created_by = $1) AND app.is_accepted = TRUE) AND a.status = 1
         ORDER BY cm.created_at DESC
         LIMIT 1
     """
@@ -138,7 +179,4 @@ async def get_chat_messages(
     result = await connection.fetch(query, chat_id)
     await close_db_connection(connection)
     data = [dict(message) for message in result]
-
-    # for message in data:
-    # message["created_at"] = message["created_at"].timestamp()
     return data

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -66,6 +66,10 @@ export default function Index() {
       setLoading(false);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const updateHistoryScore = useCallback(async (ad_id: string, score: number) => {
+    setHistory(previousHistory => previousHistory.map(ad => ad.ad_id === ad_id ? { ...ad, score_to_chamber: score } : ad));
   }, []);
 
   return (
@@ -152,7 +156,7 @@ export default function Index() {
               <View className="flex flex-col gap-5">
                 <View className="flex flex-row justify-between items-center">
                   <Text className="text-2xl text-[#50647D] font-semibold">Ultimos anuncios</Text>
-                  <Pressable className="flex flex-row items-center gap-1" onPress={() => router.push("/(user)/(tabs)/history")}>
+                  <Pressable className="flex flex-row items-center gap-1">
                     <Text className="text-[#333333] font-semibold text-base">Ver todos</Text>
                     <ArrowRight size={18} color="#333333" />
                   </Pressable>
@@ -165,7 +169,7 @@ export default function Index() {
                     ))
                     : history && history?.length > 0
                       ? history.map((data, index) => (
-                        <AdvertisementHistoryCard key={index} data={data} />
+                        <AdvertisementHistoryCard key={index} data={data} updateHistoryScore={updateHistoryScore} />
                       ))
                       : <Text className="text-center text-sm text-[#50647D]">No hay anuncios en el historial</Text>}
                 </View>

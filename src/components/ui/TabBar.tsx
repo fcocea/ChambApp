@@ -45,15 +45,17 @@ export function TabBar({ state, descriptors, navigation }: { state: NavigationSt
             }
           };
 
-          return (
-            <TabButton
-              key={index}
-              isFocused={isFocused}
-              onPress={onPress}
-              label={label}
-              options={options}
-            />
-          );
+          return options.tabBarStyle?.display === "none"
+            ? null
+            : (
+                <TabButton
+                  key={index}
+                  isFocused={isFocused}
+                  onPress={onPress}
+                  label={label}
+                  options={options}
+                />
+              );
         })}
       </View>
     </SafeAreaView>

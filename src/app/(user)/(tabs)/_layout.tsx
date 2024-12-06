@@ -1,7 +1,7 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Tabs, useSegments } from "expo-router";
-import { CircleUserRound, FileClock, House, Send } from "lucide-react-native";
+import { CircleUserRound, House, Send } from "lucide-react-native";
 
 import { TabBar } from "@/components/ui";
 
@@ -25,13 +25,9 @@ export default function TabLayout() {
           <Tabs.Screen
             name="history"
             options={{
-              title: "Historial",
-              // headerShown: false,
-              headerTintColor: "#333",
-              headerStyle: {
-                backgroundColor: "#FAFAFA"
-              },
-              tabBarIcon: ({ color, size }) => <FileClock size={size} color={color} />
+              tabBarStyle: {
+                display: "none"
+              }
             }}
           />
           <Tabs.Screen

@@ -2,11 +2,11 @@ import { RefObject, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
 import { CheckCheck, Send } from "lucide-react-native";
 
 import { Avatar, Separator } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
+import { useChat } from "@/hooks/useChat";
 import formatMoney from "@/utils/formatMoney";
 
 import AdvertisementLocation from "./AdvertisementLocation";
@@ -15,13 +15,12 @@ const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL;
 
 const BottomSheetAdvertisement = ({ data, bottomSheetModalRef, handleRefresh }: { data: any; bottomSheetModalRef: RefObject<BottomSheetModal>
 ; handleRefresh?: () => void; }) => {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { authState } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
-
+  const { goToChat } = useChat();
   const handleFinalizeService = useCallback(async () => {
     setLoading(true);
     const response = await fetch(`${API_ENDPOINT}/advertisements/${data?.ad_id}/end`, {
@@ -101,7 +100,11 @@ const BottomSheetAdvertisement = ({ data, bottomSheetModalRef, handleRefresh }: 
           className="w-full py-4 px-3 bg-white border-borderGray border rounded-xl"
           onPress={() => {
             bottomSheetModalRef.current?.close();
-            router.push("/(user)/(tabs)/(messages)/chat/12");
+            goToChat({
+              id: data?.chat_id,
+              name: data?.accepted_chamber,
+              photo: data?.accepted_chamber_photo
+            });
           }}
         >
           <View className="self-center flex flex-row items-center justify-center gap-2">

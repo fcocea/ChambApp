@@ -2,19 +2,19 @@ import { RefObject, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
 import { Ban, Send } from "lucide-react-native";
 
 import { Avatar, Separator } from "@/components/ui";
 import AdvertisementLocation from "@/components/views/user/AdvertisementLocation";
 import { useAuth } from "@/hooks/useAuth";
+import { useChat } from "@/hooks/useChat";
 import formatMoney from "@/utils/formatMoney";
 
 const API_ENDPOINT = process.env.EXPO_PUBLIC_API_URL;
 
 const BottomSheetAdvertisement = ({ data, bottomSheetModalRef, handleRefresh }: { data: any; bottomSheetModalRef: RefObject<BottomSheetModal>
 ; handleRefresh?: () => void; }) => {
-  const router = useRouter();
+  const { goToChat } = useChat();
   const insets = useSafeAreaInsets();
   const { authState } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
@@ -102,7 +102,11 @@ const BottomSheetAdvertisement = ({ data, bottomSheetModalRef, handleRefresh }: 
                 className="w-full py-4 px-3 bg-white border-borderGray border rounded-xl"
                 onPress={() => {
                   bottomSheetModalRef.current?.close();
-                  router.push("/(user)/(tabs)/(messages)/chat/12");
+                  goToChat({
+                    id: data?.chat_id,
+                    name: data?.first_name + " " + data?.last_name,
+                    photo: ""
+                  });
                 }}
               >
 

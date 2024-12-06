@@ -13,9 +13,10 @@ type AdvertisementHistoryCardData = any;
 
 interface AdvertisementHistoryCardProps {
   data: AdvertisementHistoryCardData;
+  updateHistoryScore: (ad_id: string, score: number) => void;
 }
 
-const AdvertisementHistoryCard = ({ data }: AdvertisementHistoryCardProps) => {
+const AdvertisementHistoryCard = ({ data, updateHistoryScore }: AdvertisementHistoryCardProps) => {
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -49,7 +50,7 @@ const AdvertisementHistoryCard = ({ data }: AdvertisementHistoryCardProps) => {
         <BottomSheetHistoryCard data={data} bottomSheetModalRef={bottomSheetModalRef} handleClassificate={handlePresentClassificateModalPress} />
       </BottomSheetModal>
       <BottomSheetModal ref={classificateBottomSheetModalRef} index={0} backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={1} pressBehavior="close" />}>
-        <BottomSheetClassificateCard bottomSheetModalRef={classificateBottomSheetModalRef} />
+        <BottomSheetClassificateCard bottomSheetModalRef={classificateBottomSheetModalRef} ad_id={data?.ad_id} updateHistoryScore={updateHistoryScore} />
       </BottomSheetModal>
     </>
   );

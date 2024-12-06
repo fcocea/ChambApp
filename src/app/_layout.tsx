@@ -2,14 +2,17 @@ import { useEffect } from "react";
 import { Slot, SplashScreen, useRouter, useSegments } from "expo-router";
 import * as SystemUI from "expo-system-ui";
 import TimeAgo from "javascript-time-ago";
+import en from "javascript-time-ago/locale/en";
 import es from "javascript-time-ago/locale/es";
 
 import AuthProvider from "@/contexts/AuthContext";
+import ChatProvider from "@/contexts/ChatContext";
 import { useAuth } from "@/hooks/useAuth";
 
 import "@/global.css";
 
-TimeAgo.addDefaultLocale(es);
+TimeAgo.addLocale(es);
+TimeAgo.addLocale(en);
 
 SplashScreen.preventAutoHideAsync();
 SystemUI.setBackgroundColorAsync("#FAFAFA");
@@ -45,7 +48,9 @@ const DynamicStack = () => {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <DynamicStack />
+      <ChatProvider>
+        <DynamicStack />
+      </ChatProvider>
     </AuthProvider>
   );
 }

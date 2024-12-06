@@ -7,29 +7,37 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 
 import { useAuth } from "@/hooks/useAuth";
-
 interface FormData {
   title: string;
   description: string;
   address: string;
   price: number;
   areas: number[];
+  date: Date;
 }
+
+interface Areas {
+  area_id: number;
+  name: string;
+}
+
+type DateMode = "date" | "time";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function Create() {
-  const { ...methods } = useForm();
+  const { ...methods } = useForm<FormData>();
 
   const { control, getValues } = useForm();
   const { formState: { errors } } = methods;
+  const [loading, setLoading] = useState(false);
 
   const [date] = useState(new Date());
-  const [mode, setMode] = useState("date");
+  const [mode, setMode] = useState<DateMode>("date");
   const [show, setShow] = useState(false);
   const router = useRouter();
 
-  const showMode = currentMode => {
+  const showMode = (currentMode: DateMode) => {
     setShow(true);
     setMode(currentMode);
   };
@@ -38,15 +46,13 @@ export default function Create() {
     showMode("date");
   };
 
-  const onChange = (event, selectedDate) => {
-    console.log(selectedDate);
+  const onChange = (event: any, selectedDate: Date | undefined) => {
     setShow(false);
     if (mode === "date") {
       setMode("time");
       setShow(true);
     }
-    if (mode === "time") {
-      console.log("time: ", getValues("date"));
+    if (mode === "time" && selectedDate) {
       const date = new Date(getValues("date"));
       const hours = selectedDate.getHours();
       const minutes = selectedDate.getMinutes();
@@ -56,10 +62,9 @@ export default function Create() {
   };
 
   const maxItems = 2;
-  const [areas, setAreas] = useState([]);
+  const [areas, setAreas] = useState<Areas[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // extract areas
   useEffect(() => {
     const fetchAreas = async () => {
       try {
@@ -78,9 +83,9 @@ export default function Create() {
 
   const { authState } = useAuth();
 
-  const createAdvertisement = async ({ title, description, address, price, areas }: FormData) => {
-    console.log(getValues("date").getTime());
+  const createAdvertisement = async ({ title, description, address, price, areas }: Partial<FormData>) => {
     try {
+      setLoading(true);
       const response = await fetch(`${API_URL}/advertisements/create`, {
         method: "POST",
         mode: "cors",
@@ -97,7 +102,7 @@ export default function Create() {
           start_date: getValues("date").getTime()
         })
       });
-
+      setLoading(false);
       if (response.ok) {
         Alert.alert("Publicación creada", "Tu publicación ha sido creada exitosamente.", [
           {
@@ -122,7 +127,7 @@ export default function Create() {
     }
   };
 
-  const onSubmit: SubmitHandler<FormData> = ({ title, description, address, price, areas }) => {
+  const onSubmit: SubmitHandler<FormData> = ({ title, description, address, price, areas }: Partial<FormData>) => {
     createAdvertisement({ title, description, address, price, areas });
   };
 
@@ -150,7 +155,7 @@ export default function Create() {
               )}
             />
             <Text className={`${errors?.title?.message ? "" : "invisible"} text-sm text-red-600`}>
-              {errors?.title?.message ? errors?.title?.message : "n/a"}
+              {errors?.title?.message ? (errors?.title?.message as string) : "n/a"}
             </Text>
           </View>
           <View className="flex flex-col gap-1">
@@ -165,7 +170,7 @@ export default function Create() {
               render={({ field }) => (
                 <TextInput
                   placeholder="Ingresa descripción de la publicación"
-                  className={`w-full h-20  border rounded-xl px-5 bg-white ${errors?.email?.message ? "border-red-600" : "border-borderGray"}`}
+                  className={`w-full h-20  border rounded-xl px-5 bg-white ${errors?.description?.message ? "border-red-600" : "border-borderGray"}`}
                   placeholderTextColor="#BDBDBD"
                   multiline
                   defaultValue={field.value}
@@ -173,8 +178,8 @@ export default function Create() {
                 />
               )}
             />
-            <Text className={`${errors?.title?.message ? "" : "invisible"} text-sm text-red-600`}>
-              {errors?.title?.message ? errors?.title?.message : "n/a"}
+            <Text className={`${errors?.description?.message ? "" : "invisible"} text-sm text-red-600`}>
+              {errors?.description?.message ? (errors?.description?.message as string) : "n/a"}
             </Text>
           </View>
           <View className="flex flex-col gap-1">
@@ -191,7 +196,7 @@ export default function Create() {
                 <>
                   <TextInput
                     placeholder="Ingresa la fecha en la que requieres el servicio"
-                    className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.email?.message ? "border-red-600" : "border-borderGray"}`}
+                    className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.date?.message ? "border-red-600" : "border-borderGray"}`}
                     placeholderTextColor="#BDBDBD"
                     value={field.value?.toLocaleString() || ""}
                     onPress={showDatepicker}
@@ -214,7 +219,7 @@ export default function Create() {
             />
 
             <Text className={`${errors?.title?.message ? "" : "invisible"} text-sm text-red-600`}>
-              {errors?.title?.message ? errors?.title?.message : "n/a"}
+              {errors?.title?.message ? (errors?.title?.message as string) : "n/a"}
             </Text>
           </View>
           <View className="flex flex-col gap-1">
@@ -229,15 +234,15 @@ export default function Create() {
               render={({ field }) => (
                 <TextInput
                   placeholder="Ingresa la dirección en la que requieres el servicio"
-                  className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.email?.message ? "border-red-600" : "border-borderGray"}`}
+                  className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.address?.message ? "border-red-600" : "border-borderGray"}`}
                   placeholderTextColor="#BDBDBD"
                   defaultValue={field.value}
                   onChangeText={field.onChange}
                 />
               )}
             />
-            <Text className={`${errors?.title?.message ? "" : "invisible"} text-sm text-red-600`}>
-              {errors?.title?.message ? errors?.title?.message : "n/a"}
+            <Text className={`${errors?.address?.message ? "" : "invisible"} text-sm text-red-600`}>
+              {errors?.address?.message ? (errors?.address?.message as string) : "n/a"}
             </Text>
           </View>
           <View className="flex flex-col gap-1">
@@ -252,7 +257,7 @@ export default function Create() {
               render={({ field }) => (
                 <TextInput
                   placeholder="Ingresa el monto a pagar por el servicio"
-                  className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.email?.message ? "border-red-600" : "border-borderGray"}`}
+                  className={`w-full h-14  border rounded-xl px-5 bg-white ${errors?.price?.message ? "border-red-600" : "border-borderGray"}`}
                   placeholderTextColor="#BDBDBD"
                   keyboardType="numeric"
                   defaultValue={field.value}
@@ -260,8 +265,8 @@ export default function Create() {
                 />
               )}
             />
-            <Text className={`${errors?.title?.message ? "" : "invisible"} text-sm text-red-600`}>
-              {errors?.title?.message ? errors?.title?.message : "n/a"}
+            <Text className={`${errors?.price?.message ? "" : "invisible"} text-sm text-red-600`}>
+              {errors?.price?.message ? (errors?.price?.message as string) : "n/a"}
             </Text>
           </View>
           <View className="flex flex-col gap-1">
@@ -276,7 +281,7 @@ export default function Create() {
               render={({ field }) => (
                 <>
                   <SectionedMultiSelect
-                    items={areas} // Define tu lista de áreas
+                    items={areas}
                     IconRenderer={
                       props =>
                         isLoading
@@ -287,6 +292,8 @@ export default function Create() {
                               <Icon {...props} />
                             )
                     }
+                    loadingComponent={<ActivityIndicator size="small" color="#1B456D" />}
+                    loading={isLoading}
                     uniqueKey="area_id"
                     key={isLoading ? "loading" : "loaded"}
                     subKey="children"
@@ -294,7 +301,7 @@ export default function Create() {
                     selectText={
                       field.value?.length
                         ? field.value
-                          .map(area_id => {
+                          .map((area_id: number) => {
                             const selectedItem = areas.find(area => area.area_id === area_id);
                             return selectedItem?.name || "";
                           })
@@ -355,7 +362,7 @@ export default function Create() {
                       errors?.areas?.message ? "" : "invisible"
                     } text-sm text-red-600`}
                   >
-                    {errors?.areas?.message ? errors?.areas?.message : "n/a"}
+                    {errors?.areas?.message ? (errors?.areas?.message) : "n/a"}
                   </Text>
                 </>
               )}
@@ -364,12 +371,16 @@ export default function Create() {
           </View>
         </FormProvider>
         <TouchableOpacity
-          className="w-full py-4 px-3 rounded-xl border border-borderGray bg-primary flex flex-row items-center justify-center gap-2"
+          className={`w-full py-4 px-3 rounded-xl border border-borderGray bg-primary flex flex-row items-center justify-center gap-2 ${loading ? "opacity-50" : ""}`}
+          disabled={loading}
           onPress={() => {
             methods.handleSubmit(onSubmit)();
           }}
         >
-          <Text className="text-white text-center text-base font-medium w-fit">Crear publicación</Text>
+          <View className="self-center">
+            {loading && <ActivityIndicator color="#ffffff" className="absolute -left-8" />}
+            <Text className="text-white text-center text-base font-medium w-fit">Crear publicación</Text>
+          </View>
         </TouchableOpacity>
       </View>
     </ScrollView>

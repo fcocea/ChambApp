@@ -133,7 +133,8 @@ async def get_my_advertisements(
                         ad.start_date,
                         array_agg(ar.name) AS areas,
                         (SELECT COUNT(*) FROM "AdvertisementApplication" AS app WHERE app.ad_id = ad.ad_id) AS total_applications,
-                        (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber
+                        (SELECT u.first_name || ' ' || u.last_name FROM "AdvertisementApplication" AS app JOIN "User" AS u ON app.rut = u.rut WHERE app.ad_id = ad.ad_id AND app.is_accepted = TRUE LIMIT 1) AS accepted_chamber,
+                        (SELECT id FROM "Chat" AS c WHERE c.advertisement_id = ad.ad_id) AS chat_id
                     FROM 
                         "Advertisement" AS ad 
                     JOIN 
@@ -159,7 +160,8 @@ async def get_my_advertisements(
                         a.start_date,
                         u.first_name,
                         u.last_name,
-                        array_agg(area.name) AS areas
+                        array_agg(area.name) AS areas,
+                        (SELECT id FROM "Chat" AS c WHERE c.advertisement_id = a.ad_id) AS chat_id
                     FROM
                         "AdvertisementApplication" ap
                     LEFT JOIN

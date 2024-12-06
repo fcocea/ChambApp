@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Avatar, Separator } from "@/components/ui";
 import AdvertisementLocation from "@/components/views/user/AdvertisementLocation";
 import { useAuth } from "@/hooks/useAuth";
+import { useChat } from "@/hooks/useChat";
 import formatMoney from "@/utils/formatMoney";
 
 import { AdvertisementContext } from "../../_layout";
@@ -22,7 +23,7 @@ export default function AdvertisementReview() {
   const iva = useMemo(() => ((advertisementData.info?.price || 0) + taxService) * 0.19, [advertisementData, taxService]);
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-
+  const { goToChat } = useChat();
   const confirmAdvertisement = useCallback(() => {
     setLoading(true);
     (async () => {
@@ -38,9 +39,15 @@ export default function AdvertisementReview() {
       });
       if (response.ok) {
         setLoading(false);
-        router.replace("/(user)/(tabs)");
+        const data = await response.json();
+        goToChat({
+          id: data.chat_id,
+          name: advertisementData.selected?.first_name + " " + advertisementData.selected?.last_name,
+          photo: ""
+        });
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advertisementData, id, router, authState]);
 
   return (

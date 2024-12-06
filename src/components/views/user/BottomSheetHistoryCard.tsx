@@ -2,8 +2,7 @@ import { RefObject, useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import { Send, Star } from "lucide-react-native";
+import { Star } from "lucide-react-native";
 
 import { Avatar, Separator } from "@/components/ui";
 import formatMoney from "@/utils/formatMoney";
@@ -11,7 +10,6 @@ import formatMoney from "@/utils/formatMoney";
 import AdvertisementLocation from "./AdvertisementLocation";
 
 const BottomSheetHistoryCard = ({ data, bottomSheetModalRef, handleClassificate }: { data: any; bottomSheetModalRef: RefObject<BottomSheetModal>; handleClassificate: () => void }) => {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const taxService = useMemo(() => (data.price || 0) * 0.02, [data]);
   const iva = useMemo(() => ((data?.price || 0) + taxService) * 0.19, [data, taxService]);
@@ -98,7 +96,7 @@ const BottomSheetHistoryCard = ({ data, bottomSheetModalRef, handleClassificate 
         </View>
       </View>
       <View className="flex flex-col gap-2 mt-4" style={{ marginBottom: insets.bottom }}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           className="w-full py-4 px-3 bg-white border-borderGray border rounded-xl"
           onPress={() => {
             bottomSheetModalRef.current?.close();
@@ -112,7 +110,7 @@ const BottomSheetHistoryCard = ({ data, bottomSheetModalRef, handleClassificate 
             <Send size={18} color="#1b456d" />
             <Text className="text-primary text-center text-base font-medium w-fit">Ver chat</Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {
           isItClassifiable && (
             <TouchableOpacity

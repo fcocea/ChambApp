@@ -162,14 +162,22 @@ async def accept_advertisement_applications(
             RETURNING ad_id, rut, is_accepted;
         """
 
+        create_chat_query = """
+            INSERT INTO "Chat" (advertisement_id)
+            VALUES ($1)
+            RETURNING id;
+        """
+
         async with connection.transaction():
             result = await connection.fetchval(change_status_query, ad_id, body.rut)
+            chat_id = await connection.fetchval(create_chat_query, ad_id)
 
         if not result:
             raise HTTPException(status_code=400, detail="Application not found.")
 
         return {
             "message": "Application accepted.",
+            "chat_id": chat_id,
         }
 
     finally:
