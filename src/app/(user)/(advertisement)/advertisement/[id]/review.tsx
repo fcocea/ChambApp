@@ -23,7 +23,7 @@ export default function AdvertisementReview() {
   const iva = useMemo(() => ((advertisementData.info?.price || 0) + taxService) * 0.19, [advertisementData, taxService]);
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const { goToChat } = useChat();
+  const { goToChat, fetchChats } = useChat();
   const confirmAdvertisement = useCallback(() => {
     setLoading(true);
     (async () => {
@@ -37,6 +37,7 @@ export default function AdvertisementReview() {
           rut: advertisementData?.selected?.rut
         })
       });
+      await fetchChats();
       if (response.ok) {
         setLoading(false);
         const data = await response.json();

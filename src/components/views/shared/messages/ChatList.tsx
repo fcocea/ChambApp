@@ -68,7 +68,7 @@ function RecentChat({ data }: { data: IChat }) {
       </View>
       <View className="flex justify-between py-1">
         <Text className="text-base font-light">
-          {data?.last_message_date && <TimeAgo date={convertHour(new Date(lastMessage?.createdAt || data.last_message_date))} />}
+          {(data?.last_message_date || lastMessage) && <TimeAgo date={convertHour(new Date(lastMessage?.createdAt || data.last_message_date))} />}
         </Text>
       </View>
     </Pressable>
